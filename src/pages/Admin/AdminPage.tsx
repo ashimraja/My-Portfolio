@@ -1,5 +1,5 @@
 import type { Session } from '@supabase/supabase-js'
-import { ExternalLink, LogOut, Save, Undo2, UploadCloud } from 'lucide-react'
+import { ChevronDown, ExternalLink, LogOut, Menu, Save, Undo2, UploadCloud } from 'lucide-react'
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Editor } from '@/admin/Editor'
 import { MessagesPanel } from '@/admin/MessagesPanel'
@@ -103,6 +103,8 @@ function Dashboard({ email }: { email: string }) {
   const [unread, setUnread] = useState(0)
   const [busy, setBusy] = useState(false)
   const [raw, setRaw] = useState<string | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const pick = (id: string) => { setActive(id); setRaw(null); setMenuOpen(false) }
 
   const say = useCallback((text: string, ok = true) => { setToast({ text, ok }); setTimeout(() => setToast(null), 3500) }, [])
 
@@ -150,6 +152,7 @@ function Dashboard({ email }: { email: string }) {
   const discard = (k: ContentKey) => setKey(k, JSON.parse(saved[k]))
   const resetDefault = (k: ContentKey) => { if (confirm('Replace this section with the built-in default content?')) setKey(k, defaultContent[k]) }
 
+  const currentLabel = active === 'resume' ? 'Resume builder' : active === 'messages' ? 'Messages' : (sections.find((x) => x.id === active)?.label ?? 'Menu')
   const grouped = sections.reduce<Record<string, typeof sections>>((acc, s) => { (acc[s.group] ??= []).push(s); return acc }, {})
 
   return (
@@ -164,28 +167,29 @@ function Dashboard({ email }: { email: string }) {
 
       <div className={`mx-auto grid gap-6 px-4 py-6 md:grid-cols-[13rem_1fr] md:px-6 ${active === 'resume' ? 'max-w-[92rem]' : 'max-w-6xl'}`}>
         <nav aria-label="Sections" className="md:sticky md:top-20 md:self-start">
-          <select className={`${inputCls} md:hidden`} value={active} onChange={(e) => { setActive(e.target.value); setRaw(null) }} aria-label="Section">
-            {sections.map((s) => <option key={s.id} value={s.id}>{s.label}{dirtyKeys.has(s.key) ? ' •' : ''}</option>)}
-            <option value="resume">Resume builder</option>
-            <option value="messages">Messages{unread ? ` (${unread})` : ''}</option>
-          </select>
-          <div className="hidden space-y-5 md:block">
+          {/* Phone: a menu button showing the current section; it opens the same list the desktop sidebar shows. */}
+          <button type="button" aria-expanded={menuOpen} aria-controls="admin-menu" onClick={() => setMenuOpen((o) => !o)}
+            className="flex w-full items-center justify-between gap-3 rounded-lg border border-border bg-surface/60 px-4 py-3 text-left md:hidden">
+            <span className="flex items-center gap-2.5 font-medium"><Menu size={18} aria-hidden /> {currentLabel}{dirtyKeys.size > 0 && <span aria-label="unsaved changes" className="h-2 w-2 rounded-full bg-accent" />}</span>
+            <ChevronDown size={18} aria-hidden className={`transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
+          </button>
+          <div id="admin-menu" className={`${menuOpen ? 'mt-3 block' : 'hidden'} space-y-5 rounded-xl border border-border bg-surface/40 p-3 md:mt-0 md:block md:border-0 md:bg-transparent md:p-0`}>
             {Object.entries(grouped).map(([g, items]) => (
               <div key={g}><p className="mb-1.5 px-3 text-xs text-muted-foreground">{g}</p>
                 {items.map((s) => (
-                  <button key={s.id} onClick={() => { setActive(s.id); setRaw(null) }} className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${active === s.id ? 'bg-accent text-accent-foreground' : 'hover:bg-surface'}`}>
+                  <button key={s.id} onClick={() => pick(s.id)} className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${active === s.id ? 'bg-accent text-accent-foreground' : 'hover:bg-surface'}`}>
                     {s.label}{dirtyKeys.has(s.key) && <span aria-label="unsaved changes" className={`h-2 w-2 rounded-full ${active === s.id ? 'bg-accent-foreground' : 'bg-accent'}`} />}
                   </button>
                 ))}
               </div>
             ))}
             <div><p className="mb-1.5 px-3 text-xs text-muted-foreground">Tools</p>
-              <button onClick={() => setActive('resume')} className={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition-colors ${active === 'resume' ? 'bg-accent text-accent-foreground' : 'hover:bg-surface'}`}>Resume builder</button></div>
+              <button onClick={() => pick('resume')} className={`flex w-full items-center rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${active === 'resume' ? 'bg-accent text-accent-foreground' : 'hover:bg-surface'}`}>Resume builder</button></div>
             <div><p className="mb-1.5 px-3 text-xs text-muted-foreground">Inbox</p>
-              <button onClick={() => setActive('messages')} className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${active === 'messages' ? 'bg-accent text-accent-foreground' : 'hover:bg-surface'}`}>
+              <button onClick={() => pick('messages')} className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${active === 'messages' ? 'bg-accent text-accent-foreground' : 'hover:bg-surface'}`}>
                 Messages{unread > 0 && <span className="rounded-full bg-accent px-2 text-xs font-semibold text-accent-foreground">{unread}</span>}
               </button></div>
-            <button className={`${btnCls} w-full`} disabled={busy || state !== 'ready'} onClick={() => save(contentKeys)}><UploadCloud size={14} /> Publish all content</button>
+            <button className={`${btnCls} w-full`} disabled={busy || state !== 'ready'} onClick={() => { void save(contentKeys); setMenuOpen(false) }}><UploadCloud size={14} /> Publish all content</button>
           </div>
         </nav>
 
