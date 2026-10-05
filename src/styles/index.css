@@ -1,0 +1,145 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/inter-tight';
+@import '@fontsource/instrument-serif/400.css';
+@import '@fontsource/instrument-serif/400-italic.css';
+
+/* ───────────────────────────────────────────────
+   DESIGN TOKENS — change the theme only here.
+   ─────────────────────────────────────────────── */
+:root {
+  /* Main site: warm charcoal — dark, but a step lighter than After Hours so the two rooms read differently. */
+  --background: #1b1a18;
+  --foreground: #f0ebe0;
+  --surface: #242320;
+  --surface-hover: #2d2b28;
+  --muted: #262522;
+  --muted-foreground: #b9b4a8;
+  --border: #38362f;
+  --accent: #ff5b2e;
+  --accent-foreground: #1b1a18;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --gutter: clamp(1rem, 4vw, 3rem);
+  --nav-h: 4.5rem;
+}
+
+/* After Hours: the deepest black on the site — same tokens, night values. */
+[data-theme='night'] {
+  --background: #050505;
+  --foreground: #ebe7dc;
+  --surface: #0c0c0b;
+  --surface-hover: #141413;
+  --muted: #0f0f0e;
+  --muted-foreground: #b0afa4;
+  --border: #1f1e1c;
+  --accent: #ff5b2e;
+  --accent-foreground: #050505;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --font-sans: 'Inter Tight Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Instrument Serif', ui-serif, Georgia, serif;
+  --font-mono: 'Inter Tight Variable', ui-sans-serif, system-ui, sans-serif; /* one sans family everywhere; kept as an alias */
+
+  --breakpoint-xs: 30rem;
+}
+
+html {
+  background: var(--background);
+  color-scheme: dark;
+  -webkit-text-size-adjust: 100%;
+}
+html[data-theme='night'] { color-scheme: dark; }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.55;
+  letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+  transition: background-color 0.6s var(--ease-out-expo), color 0.6s var(--ease-out-expo);
+}
+
+::selection { background: var(--accent); color: var(--accent-foreground); }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ── Type scale (editorial) ── */
+.t-display { font-family: var(--font-display); font-weight: 400; line-height: 1; letter-spacing: -0.01em; }
+.t-hero { font-size: clamp(2.6rem, 7.4vw, 7rem); }
+.t-xl   { font-size: clamp(2.2rem, 5.2vw, 4.6rem); }
+.t-lg   { font-size: clamp(1.7rem, 3.4vw, 3rem); }
+.t-md   { font-size: clamp(1.35rem, 2.3vw, 2rem); }
+/* Sans scale — everything below headline level. Serif is reserved for hero + section titles. */
+.t-title    { font-family: var(--font-sans); font-weight: 500; font-size: clamp(1.4rem, 2vw, 1.85rem); line-height: 1.2; letter-spacing: -0.01em; }
+.t-title-lg { font-family: var(--font-sans); font-weight: 500; font-size: clamp(1.8rem, 3vw, 2.8rem); line-height: 1.12; letter-spacing: -0.02em; }
+.t-stat     { font-family: var(--font-sans); font-weight: 500; font-size: clamp(2.2rem, 4vw, 3.6rem); line-height: 1; letter-spacing: -0.02em; }
+.t-lead     { font-family: var(--font-sans); font-weight: 400; font-size: clamp(1.2rem, 1.8vw, 1.55rem); line-height: 1.45; letter-spacing: -0.01em; color: var(--foreground); }
+.t-label {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+.t-body { font-size: clamp(1.02rem, 1.2vw, 1.2rem); line-height: 1.6; color: var(--muted-foreground); }
+.italic-accent { color: var(--accent); }
+
+.container-x { padding-inline: var(--gutter); max-width: 1680px; margin-inline: auto; }
+.rule { border-top: 1px solid var(--border); }
+
+/* Section shell */
+.section { position: relative; padding-block: clamp(5rem, 12vw, 11rem); }
+
+/* Custom cursor: the native one is hidden only while it is active, and never inside [data-cursor-system] (the puzzle). */
+html.has-custom-cursor, html.has-custom-cursor a, html.has-custom-cursor button, html.has-custom-cursor [data-cursor] { cursor: none; }
+html.has-custom-cursor [data-cursor-system], html.has-custom-cursor [data-cursor-system] * { cursor: pointer !important; }
+html.has-custom-cursor [data-cursor-system] .cube-stage, html.has-custom-cursor [data-cursor-system] .cube-stage * { cursor: grab !important; }
+html.has-custom-cursor [data-cursor-system] .cube-stage:active, html.has-custom-cursor [data-cursor-system] .cube-stage:active * { cursor: grabbing !important; }
+html.has-custom-cursor [data-cursor-system] button:disabled { cursor: not-allowed !important; }
+/* Touch / no custom cursor: keep the hand on anything clickable (preflight resets buttons to the arrow). */
+html:not(.has-custom-cursor) :is(a[href], button:not(:disabled), [role='button'], [role='tab'], [role='switch'], label[for], select) { cursor: pointer; }
+
+/* Marquee */
+@keyframes marquee { to { transform: translateX(-50%); } }
+.marquee-track { animation: marquee 40s linear infinite; }
+
+@keyframes pulse-dot { 0%,100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent); } 50% { box-shadow: 0 0 0 6px transparent; } }
+.pulse-dot { animation: pulse-dot 2s ease-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* Elements marked .allow-motion (e.g. the puzzle tiles) keep their short functional slide. */
+  *:where(:not(.allow-motion, .allow-motion *)), *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+  .marquee-track { animation: none; }
+}
+
+.sr-only-focusable:not(:focus):not(:focus-within) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+/* Keep browser autofill from painting its own background over our fields */
+input:-webkit-autofill, textarea:-webkit-autofill {
+  -webkit-text-fill-color: var(--foreground);
+  transition: background-color 9999s ease-out 0s;
+  box-shadow: 0 0 0 1000px var(--background) inset;
+}
+

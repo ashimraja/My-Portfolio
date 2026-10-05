@@ -1,0 +1,51 @@
+-- Run this once in Supabase → SQL Editor.
+-- BEFORE running: replace every  you@example.com  below with the email of the admin user you create in Authentication → Users (find & replace).
+
+-- ───────────────────────── content (one row per section of the site) ─────────────────────────
+create table if not exists public.content (
+  key        text primary key,
+  value      jsonb       not null,
+  updated_at timestamptz not null default now()
+);
+alter table public.content enable row level security;
+
+drop policy if exists "content: public read" on public.content;
+create policy "content: public read" on public.content for select using (true);
+
+drop policy if exists "content: admin write" on public.content;
+create policy "content: admin write" on public.content for all to authenticated
+  using      ((auth.jwt() ->> 'email') = 'you@example.com')
+  with check ((auth.jwt() ->> 'email') = 'you@example.com');
+
+-- ───────────────────────── messages (contact form inbox) ─────────────────────────
+create table if not exists public.messages (
+  id         bigint generated always as identity primary key,
+  created_at timestamptz not null default now(),
+  name       text not null check (char_length(name)    between 1 and 200),
+  email      text not null check (char_length(email)   between 3 and 200),
+  company    text          check (char_length(company) <= 200),
+  project    text          check (char_length(project) <= 400),
+  message    text not null check (char_length(message) between 1 and 5000),
+  read       boolean not null default false
+);
+alter table public.messages enable row level security;
+
+drop policy if exists "messages: anyone can send" on public.messages;
+create policy "messages: anyone can send" on public.messages for insert to anon, authenticated with check (true);
+
+drop policy if exists "messages: admin manage" on public.messages;
+create policy "messages: admin manage" on public.messages for all to authenticated
+  using      ((auth.jwt() ->> 'email') = 'you@example.com')
+  with check ((auth.jwt() ->> 'email') = 'you@example.com');
+
+-- ───────────────────────── image storage (public bucket) ─────────────────────────
+insert into storage.buckets (id, name, public) values ('portfolio', 'portfolio', true)
+on conflict (id) do nothing;
+
+drop policy if exists "storage: public read" on storage.objects;
+create policy "storage: public read" on storage.objects for select using (bucket_id = 'portfolio');
+
+drop policy if exists "storage: admin write" on storage.objects;
+create policy "storage: admin write" on storage.objects for all to authenticated
+  using      (bucket_id = 'portfolio' and (auth.jwt() ->> 'email') = 'you@example.com')
+  with check (bucket_id = 'portfolio' and (auth.jwt() ->> 'email') = 'you@example.com');
