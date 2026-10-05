@@ -29,7 +29,7 @@ export function ContactForm() {
       <div className="flex flex-wrap items-center gap-6 sm:col-span-2">
         <Button type="submit" disabled={status === 'sending'}>{status === 'sending' ? 'Sending…' : 'Send message'}</Button>
         <p id="form-note" role="status" aria-live="polite" className={`text-sm ${status === 'done' ? 'text-accent' : status === 'error' ? 'text-red-400' : 'text-muted-foreground'}`}>
-          {status === 'done' ? portfolio.contact.successMessage : status === 'error' ? 'Something went wrong. Please email me directly.' : portfolio.contact.formNote}
+          {status === 'done' ? portfolio.contact.successMessage : status === 'error' ? 'Something went wrong. Please email me directly.' : ''}
         </p>
       </div>
     </form>

@@ -4,6 +4,7 @@ import { Reveal } from '@/components/animations/Reveal'
 import { RevealText } from '@/components/animations/RevealText'
 import { usePortfolio } from '@/content/ContentProvider'
 import { scrollToTarget } from '@/lib/scroll'
+import { cleanHref, displayLink } from '@/lib/links'
 import { ContactForm } from './ContactForm'
 
 export function Contact() {
@@ -24,7 +25,7 @@ export function Contact() {
             <ScrollWords className="t-body max-w-xs" text={contact.text} />
             <dl className="mt-8 space-y-4">
               <div><dt className="t-label">Email</dt><dd><a className="text-lg underline decoration-border underline-offset-4 transition-colors hover:decoration-accent" href={`mailto:${email}`}>{email}</a></dd></div>
-              {socials.map((s) => <div key={s.label}><dt className="t-label">{s.label}</dt><dd><a className="text-lg underline decoration-border underline-offset-4 transition-colors hover:decoration-accent" href={s.href} target="_blank" rel="noreferrer noopener">{s.href.replace('https://', '')}</a></dd></div>)}
+              {socials.map((s) => <div key={s.label}><dt className="t-label">{s.label}</dt><dd><a className="text-lg underline decoration-border underline-offset-4 transition-colors hover:decoration-accent" href={cleanHref(s.href)} target="_blank" rel="noreferrer noopener">{displayLink(s.label, s.href)}</a></dd></div>)}
             </dl>
           </Reveal>
           <Reveal className="scroll-mt-32 md:col-span-8"><div id="contact-form"><ContactForm /></div></Reveal>

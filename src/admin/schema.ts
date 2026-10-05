@@ -50,8 +50,8 @@ export const sections: SectionDef[] = [
     group('philosophy', 'Engineering philosophy', [t('kicker', 'Small label'), t('title', 'Title'), list('principles', 'Principles', 'title', [t('title', 'Principle'), ta('text', 'Explanation', 2)])]),
   ] },
   { id: 'contact', label: 'Contact & footer', group: 'Site', key: 'portfolio', fields: [
-    group('contact', 'Contact section', [t('kicker', 'Small label'), t('headline', 'Small headline'), t('emphasis', 'Highlighted ending'), ta('text', 'Text'), t('formNote', 'Note under the form'), url('emailEndpoint', 'Email form endpoint (Formspree URL)', 'Messages are emailed through this. Leave empty to only save them to the Messages inbox.'), t('successMessage', 'Message after sending')]),
-    group('footer', 'Footer', [t('tagline', 'Tagline'), t('legal', 'Copyright line')]),
+    group('contact', 'Contact section', [t('kicker', 'Small label'), t('headline', 'Small headline'), t('emphasis', 'Highlighted ending'), ta('text', 'Text'), url('emailEndpoint', 'Email form endpoint (Formspree URL)', 'Messages are emailed through this. Leave empty to only save them to the Messages inbox.'), t('successMessage', 'Message after sending')]),
+    group('footer', 'Footer', [t('legal', 'Copyright line')]),
   ] },
   { id: 'seo', label: 'SEO & sharing', group: 'Site', key: 'portfolio', fields: [
     group('seo', 'Search & social previews', [url('siteUrl', 'Site URL (https://…)'), t('title', 'Default page title'), t('titleTemplate', 'Title template', 'Use %s for the page name.'), ta('description', 'Description'), { kind: 'image', key: 'ogImage', label: 'Social preview image (1200×630)' }, t('twitterHandle', 'Twitter / X handle'), strs('keywords', 'Keywords')]),

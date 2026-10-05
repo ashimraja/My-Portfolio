@@ -76,12 +76,11 @@ export const portfolio: Portfolio = {
     headline: 'Have an idea?',
     emphasis: 'unreasonably good.',
     text: 'Tell me what you are building. I am open to selective remote freelance work and reply to every serious message.',
-    formNote: 'Your message is emailed straight to me.',
     emailEndpoint: 'https://formspree.io/f/xbdqjddg',
     successMessage: 'Message received. I will get back to you soon.',
   },
 
-  footer: { tagline: 'Built with curiosity.', legal: '© 2026 MD Ashim Raja' },
+  footer: { legal: '© 2026 MD Ashim Raja' },
 
   theme: { accent: '#ff5b2e' },
 

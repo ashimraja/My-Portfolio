@@ -25,8 +25,8 @@ export interface Portfolio {
   about: { kicker: string; words: string[]; intro: string; paragraphs: string[]; focus: { label: string; text: string }[]; game: { hint: string } }
   stats: Stat[]
   philosophy: { kicker: string; title: string; principles: { title: string; text: string }[] }
-  contact: { kicker: string; headline: string; emphasis: string; text: string; formNote: string; successMessage: string; emailEndpoint?: string }
-  footer: { tagline: string; legal: string }
+  contact: { kicker: string; headline: string; emphasis: string; text: string; successMessage: string; emailEndpoint?: string }
+  footer: { legal: string }
   seo: SeoConfig
   /** Site-wide primary colour (hex). Applied as the --accent design token. */
   theme?: { accent: string }

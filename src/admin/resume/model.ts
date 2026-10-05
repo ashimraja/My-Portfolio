@@ -1,3 +1,4 @@
+import { cleanHref } from '@/lib/links'
 import type { SiteContent } from '@/types'
 
 export interface ResumeLink { label: string; href: string }
@@ -65,7 +66,7 @@ export function buildFromSite(c: SiteContent): ResumeData {
     phone: formatPhone(wa.split('wa.me/')[1] ?? ''),
     email: p.email,
     location: p.location,
-    links: [...(linkedin ? [{ label: 'LinkedIn', href: linkedin.href }] : []), { label: 'Portfolio', href: p.seo.siteUrl }],
+    links: [...(linkedin ? [{ label: 'LinkedIn', href: cleanHref(linkedin.href) }] : []), { label: 'Portfolio', href: p.seo.siteUrl }],
     show: { summary: true, otherProjects: true, education: true, skills: true },
     summary: p.about.intro,
     experience: c.experience.items.map((e) => ({ company: e.company, role: e.role, location: e.location ?? '', period: e.period, bullets: [] })),
