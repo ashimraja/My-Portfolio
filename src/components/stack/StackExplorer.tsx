@@ -1,6 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useState } from 'react'
-import { Reveal } from '@/components/animations/Reveal'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { useContent } from '@/content/ContentProvider'
 import { ease } from '@/lib/animations'
@@ -17,7 +16,7 @@ export function StackExplorer() {
         <SectionHeading index="03" kicker={stackIntro.kicker} title={stackIntro.title} />
         <span id="stack-h" className="sr-only">Stack</span>
         <div className="mt-14 grid gap-10 md:mt-20 lg:grid-cols-12">
-          <div role="tablist" aria-label="Technology categories" className="flex gap-2 overflow-x-auto pb-2 lg:col-span-4 lg:flex-col lg:gap-0 lg:overflow-visible lg:pb-0">
+          <div role="tablist" aria-label="Technology categories" className="-mx-[var(--gutter)] flex gap-2 overflow-x-auto px-[var(--gutter)] pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-lg:[mask-image:linear-gradient(to_right,transparent,#000_var(--gutter),#000_calc(100%-2.5rem),transparent)] lg:col-span-4 lg:mx-0 lg:flex-col lg:gap-0 lg:overflow-visible lg:px-0 lg:pb-0">
             {stack.map((c, i) => (
               <button key={c.id} role="tab" id={`tab-${c.id}`} aria-selected={c.id === id} aria-controls="stack-panel" onClick={() => setId(c.id)}
                 onKeyDown={(e) => { if (e.key === 'ArrowDown' || e.key === 'ArrowRight') setId(stack[(i + 1) % stack.length].id); if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') setId(stack[(i - 1 + stack.length) % stack.length].id) }}
@@ -46,7 +45,6 @@ export function StackExplorer() {
             </AnimatePresence>
           </div>
         </div>
-        <Reveal className="mt-10"><p className="t-label">All categories & items live in src/data/skills.ts</p></Reveal>
       </div>
     </section>
   )

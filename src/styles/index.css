@@ -110,7 +110,9 @@ body {
 .rule { border-top: 1px solid var(--border); }
 
 /* Section shell */
-.section { position: relative; padding-block: clamp(5rem, 12vw, 11rem); }
+.section { position: relative; padding-block: clamp(5rem, 12vw, 11rem); overflow-x: clip; }
+/* Nothing may widen the page: animated/translated content that starts off-screen is clipped at its section. */
+main { overflow-x: clip; }
 
 /* Custom cursor: the native one is hidden only while it is active, and never inside [data-cursor-system] (the puzzle). */
 html.has-custom-cursor, html.has-custom-cursor a, html.has-custom-cursor button, html.has-custom-cursor [data-cursor] { cursor: none; }

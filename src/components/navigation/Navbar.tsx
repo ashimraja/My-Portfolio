@@ -66,8 +66,8 @@ export function Navbar() {
   return (
     <>
       <a href="#main" className="sr-only-focusable fixed left-4 top-4 z-[90] rounded bg-accent px-4 py-2 text-accent-foreground">Skip to content</a>
-      <header className={`pointer-events-none fixed inset-x-0 z-[60] flex justify-center transition-[top,padding] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${compact ? 'top-3 px-3 sm:top-4 sm:px-5' : 'top-0 px-0'}`}>
-        <motion.div style={{ x: mx, y: my }} className="w-full" animate={{ maxWidth: compact ? 1120 : 2400 }} transition={{ duration: 0.7, ease }}>
+      <header className={`pointer-events-none fixed inset-x-0 z-[60] flex justify-center overflow-x-clip transition-[top,padding] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${compact ? 'top-3 px-3 sm:top-4 sm:px-5' : 'top-0 px-0'}`}>
+        <motion.div style={compact ? { x: mx, y: my } : undefined} className="w-full" animate={{ maxWidth: compact ? 1120 : 2400 }} transition={{ duration: 0.7, ease }}>
           <div className={`pointer-events-auto flex items-center justify-between gap-4 border transition-[background-color,border-color,border-radius,padding,backdrop-filter] duration-700 ${compact ? 'rounded-2xl border-border bg-background/80 py-2.5 pl-5 pr-2.5 backdrop-blur-xl' : 'rounded-none border-transparent bg-transparent px-[var(--gutter)] py-5'}`}>
             <Link to="/" aria-label={`${portfolio.name} — home`} data-cursor="hover" className="flex shrink-0 items-center gap-3 leading-none">
               <Logo className="h-9 w-9 text-foreground" />
