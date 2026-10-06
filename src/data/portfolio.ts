@@ -59,18 +59,6 @@ export const portfolio: Portfolio = {
     { value: 6, suffix: '', label: 'Case Studies' },
   ],
 
-  philosophy: {
-    kicker: 'Engineering philosophy',
-    title: 'Five things I refuse to compromise on.',
-    principles: [
-      { title: 'Build for humans.', text: 'Software is judged by the person holding it, not the engineer reading it.' },
-      { title: 'Make complexity invisible.', text: 'The best abstraction is the one nobody has to think about.' },
-      { title: 'Performance is a feature.', text: 'Speed is the first thing users feel and the last thing they forgive.' },
-      { title: 'Good architecture enables creativity.', text: 'Solid foundations are what let a team take risks on the surface.' },
-      { title: 'Ship. Measure. Improve.', text: 'Nothing is finished until it has met reality — then it gets better.' },
-    ],
-  },
-
   contact: {
     kicker: 'Contact',
     headline: 'Have an idea?',

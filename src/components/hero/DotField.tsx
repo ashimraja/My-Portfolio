@@ -16,6 +16,8 @@ export function DotField() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
     let w = 0, h = 0, raf = 0, visible = true
     const mouse = { x: -9999, y: -9999, tx: -9999, ty: -9999 }
+    // 1 while a mouse is present or a finger is down; eases to 0 after the finger lifts, so touch dots settle back smoothly.
+    let power = fine ? 1 : 0, powerTarget = power
     const style = getComputedStyle(document.documentElement)
     const fg = style.getPropertyValue('--foreground').trim()
     const accent = style.getPropertyValue('--accent').trim()
@@ -30,6 +32,7 @@ export function DotField() {
       ctx.clearRect(0, 0, w, h)
       mouse.x += (mouse.tx - mouse.x) * 0.12
       mouse.y += (mouse.ty - mouse.y) * 0.12
+      power += (powerTarget - power) * 0.08
       const time = reduce ? 0 : t * 0.0006
       for (let x = spacing / 2; x < w; x += spacing) {
         for (let y = spacing / 2; y < h; y += spacing) {
@@ -40,7 +43,7 @@ export function DotField() {
           const d = Math.hypot(dx, dy)
           let hot = 0
           if (d < RADIUS) {
-            hot = 1 - d / RADIUS
+            hot = (1 - d / RADIUS) * power
             const push = hot * hot * 34
             px += (dx / (d || 1)) * push
             py += (dy / (d || 1)) * push
@@ -59,9 +62,29 @@ export function DotField() {
     resize(); io.observe(canvas); loop()
     const ro = new ResizeObserver(() => { resize(); if (reduce) loop() })
     ro.observe(canvas)
+    // Touch screens have no hover: a finger down or dragging acts as the pointer (page scrolling is not blocked).
+    const onTouch = (e: TouchEvent) => {
+      const t = e.touches[0]; if (!t) return
+      const r = canvas.getBoundingClientRect()
+      const x = t.clientX - r.left, y = t.clientY - r.top
+      if (powerTarget === 0 || mouse.x < -999) { mouse.x = x; mouse.y = y } // first contact: appear under the finger, don't sweep in
+      mouse.tx = x; mouse.ty = y; powerTarget = 1
+    }
+    const onTouchEnd = () => { powerTarget = 0 }
     if (fine) window.addEventListener('pointermove', onMove, { passive: true })
-    return () => { cancelAnimationFrame(raf); io.disconnect(); ro.disconnect(); window.removeEventListener('pointermove', onMove) }
+    else {
+      window.addEventListener('touchstart', onTouch, { passive: true })
+      window.addEventListener('touchmove', onTouch, { passive: true })
+      window.addEventListener('touchend', onTouchEnd, { passive: true })
+      window.addEventListener('touchcancel', onTouchEnd, { passive: true })
+    }
+    return () => {
+      cancelAnimationFrame(raf); io.disconnect(); ro.disconnect()
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('touchstart', onTouch); window.removeEventListener('touchmove', onTouch)
+      window.removeEventListener('touchend', onTouchEnd); window.removeEventListener('touchcancel', onTouchEnd)
+    }
   }, [fine, reduce])
 
-  return <canvas ref={ref} aria-hidden className="absolute inset-0 h-full w-full [mask-image:radial-gradient(ellipse_at_70%_45%,black_20%,transparent_75%)]" />
+  return <canvas ref={ref} aria-hidden className="absolute inset-0 h-full w-full [mask-image:radial-gradient(ellipse_at_70%_45%,black_20%,transparent_75%)] max-md:[mask-image:radial-gradient(ellipse_at_50%_50%,black_35%,transparent_90%)]" />
 }

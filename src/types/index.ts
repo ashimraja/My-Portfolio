@@ -22,9 +22,8 @@ export interface Portfolio {
   socials: SocialLink[]
   availability: { status: 'open' | 'limited' | 'closed'; label: string; note?: string }
   hero: { eyebrow: string; greeting: string; headline: { prefix: string; words: string[]; lines: string[] }; roles: string[]; scrollLabel: string }
-  about: { kicker: string; words: string[]; intro: string; paragraphs: string[]; focus: { label: string; text: string }[]; game: { hint: string } }
+  about: { photo?: string; kicker: string; words: string[]; intro: string; paragraphs: string[]; focus: { label: string; text: string }[]; game: { hint: string } }
   stats: Stat[]
-  philosophy: { kicker: string; title: string; principles: { title: string; text: string }[] }
   contact: { kicker: string; headline: string; emphasis: string; text: string; successMessage: string; emailEndpoint?: string }
   footer: { legal: string }
   seo: SeoConfig
@@ -40,11 +39,16 @@ export interface VisualSpec {
   pattern: 'rings' | 'grid' | 'waves' | 'blocks'
 }
 
+/** What a project is: decides the filter it appears under and which content its detail page shows. */
+export type ProjectKind = 'mobile' | 'web'
+
 export type Screenshot = string | { src: string; caption?: string }
 
 export interface Project {
   slug: string
   title: string
+  /** Mobile app (store badges, phone screens) or web application (live site, source, browser screens). Defaults sensibly when omitted. */
+  kind?: ProjectKind
   /** One short line shown under the title, e.g. "Ride, parcel & food delivery". */
   category: string
   role: string
@@ -56,6 +60,9 @@ export interface Project {
   /** Store listings. Omit a key if the app is not on that store. */
   stores: { appStore?: string; playStore?: string }
   links: { label: string; href: string }[]
+  /** Web applications: the live site and (optionally) the source code. */
+  liveUrl?: string
+  repoUrl?: string
   /** Image paths (files in /public) or {src, caption}. Missing files fall back to a placeholder. */
   screenshots: Screenshot[]
   // Optional case-study content: sections without data are skipped automatically.
@@ -91,7 +98,24 @@ export interface StackCategory { id: string; label: string; blurb: string; items
 
 export interface Testimonial { quote: string; name: string; role: string; company: string; initials: string }
 
-export interface SideProject { title: string; blurb: string; year: string; status: string; tech: string[]; href: string }
+export type BlogBlockType = 'paragraph' | 'heading' | 'subheading' | 'list' | 'quote' | 'code' | 'image' | 'youtube'
+/** One piece of an article. Which fields are used depends on `type` (text → text blocks and code; src → image; video → YouTube link). */
+export interface BlogBlock { type: BlogBlockType; text?: string; language?: string; src?: string; video?: string; caption?: string }
+export interface BlogPost {
+  slug: string
+  title: string
+  excerpt: string
+  /** ISO date, e.g. 2026-03-14. */
+  date: string
+  tags: string[]
+  cover?: string
+  /** The original Medium article. With no blocks, the post simply links out to it. */
+  mediumUrl?: string
+  blocks: BlogBlock[]
+}
+export interface BlogContent { intro: SectionIntro; mediumProfile?: string; items: BlogPost[] }
+
+export interface SideProject { kind?: ProjectKind; title: string; blurb: string; year: string; status: string; tech: string[]; href: string }
 
 export interface AfterHoursContent {
   kicker: string
@@ -112,6 +136,7 @@ export interface SiteContent {
   stack: { intro: SectionIntro; categories: StackCategory[] }
   testimonials: { items: Testimonial[] }
   afterHours: AfterHoursContent
+  blog: BlogContent
   navigation: { items: NavItem[]; cta: NavItem }
 }
 export type ContentKey = keyof SiteContent

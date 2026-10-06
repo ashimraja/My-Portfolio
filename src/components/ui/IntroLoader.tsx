@@ -17,13 +17,13 @@ export function IntroLoader() {
 
   // Minimum on-screen time for the animation…
   useEffect(() => {
-    const total = reduce ? 500 : 2300
+    const total = reduce ? 300 : 1100
     const start = performance.now()
     let raf = 0
     const tick = (t: number) => { const p = Math.min((t - start) / total, 1); setCount(Math.round(p * 100)); if (p < 1) raf = requestAnimationFrame(tick) }
     raf = requestAnimationFrame(tick)
     document.documentElement.style.overflow = 'hidden'
-    const t1 = setTimeout(() => setMinDone(true), total + 200)
+    const t1 = setTimeout(() => setMinDone(true), total + 100)
     return () => { cancelAnimationFrame(raf); clearTimeout(t1); document.documentElement.style.overflow = '' }
   }, [reduce])
 
@@ -31,7 +31,7 @@ export function IntroLoader() {
   useEffect(() => {
     if (!minDone || !ready) return
     setShow(false)
-    const t2 = setTimeout(() => { markIntroDone(); document.documentElement.style.overflow = '' }, reduce ? 100 : 450)
+    const t2 = setTimeout(() => { markIntroDone(); document.documentElement.style.overflow = '' }, reduce ? 100 : 300)
     return () => clearTimeout(t2)
   }, [minDone, ready, reduce])
 
@@ -40,12 +40,12 @@ export function IntroLoader() {
     <AnimatePresence>
       {show && (
         <motion.div role="status" aria-label={`Loading ${portfolio.name}`} className="fixed inset-0 z-[95] flex flex-col justify-between bg-background p-[var(--gutter)] text-foreground"
-          exit={{ y: '-100%', transition: { duration: reduce ? 0.2 : 0.95, ease: easeInOut } }}>
+          exit={{ y: '-100%', transition: { duration: reduce ? 0.2 : 0.7, ease: easeInOut } }}>
           <p className="t-label flex justify-between"><span>{portfolio.title}</span><span>{portfolio.location}</span></p>
           <h1 aria-hidden className="t-display flex flex-wrap text-[clamp(3.6rem,16vw,17rem)] leading-[0.85]">
             {letters.map((ch, i) => (
               <span key={i} className="inline-block overflow-hidden pb-[0.08em]">
-                <motion.span className="inline-block" initial={{ y: reduce ? 0 : '110%' }} animate={{ y: 0 }} transition={{ duration: 1, ease, delay: reduce ? 0 : 0.15 + i * 0.06 }}>
+                <motion.span className="inline-block" initial={{ y: reduce ? 0 : '110%' }} animate={{ y: 0 }} transition={{ duration: 0.7, ease, delay: reduce ? 0 : 0.05 + i * 0.03 }}>
                   {ch === ' ' ? ' ' : ch}
                 </motion.span>
               </span>

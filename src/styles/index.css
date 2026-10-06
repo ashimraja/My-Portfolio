@@ -145,3 +145,16 @@ input:-webkit-autofill, textarea:-webkit-autofill {
   box-shadow: 0 0 0 1000px var(--background) inset;
 }
 
+
+/* Code highlighting (highlight.js classes) in the site's own palette */
+.hljs { color: #e6e0d2; background: transparent; }
+.hljs-comment, .hljs-quote { color: #7d776a; font-style: italic; }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-doctag, .hljs-meta .hljs-keyword { color: #ff7a52; }
+.hljs-string, .hljs-regexp, .hljs-addition, .hljs-attribute, .hljs-meta .hljs-string { color: #d9c28c; }
+.hljs-number, .hljs-symbol, .hljs-bullet, .hljs-variable.constant_ { color: #f0a35e; }
+.hljs-title, .hljs-title.function_, .hljs-section { color: #f4d9a6; }
+.hljs-title.class_, .hljs-type, .hljs-built_in, .hljs-selector-class, .hljs-selector-id { color: #9fc4a0; }
+.hljs-attr, .hljs-property, .hljs-name, .hljs-tag { color: #c9b8e8; }
+.hljs-params, .hljs-variable, .hljs-template-variable { color: #e6e0d2; }
+.hljs-deletion { color: #ff6b6b; }
+.hljs-emphasis { font-style: italic; } .hljs-strong { font-weight: 600; }

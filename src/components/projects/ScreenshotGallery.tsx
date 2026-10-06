@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { Project } from '@/types'
+import { hostOf, kindOf } from '@/lib/projectKind'
+import { BrowserShot } from './BrowserFrame'
 import { PhoneFrame } from './PhoneFrame'
 
 /**
@@ -7,6 +9,7 @@ import { PhoneFrame } from './PhoneFrame'
  * (vertical wheel scrolls the row while it can still move, then hands back to the page) and mouse drag.
  */
 export function ScreenshotGallery({ project }: { project: Project }) {
+  const web = kindOf(project) === 'web'
   const row = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -45,7 +48,9 @@ export function ScreenshotGallery({ project }: { project: Project }) {
           const { src, caption } = typeof shot === 'string' ? { src: shot, caption: undefined } : shot
           return (
             <div key={src}>
-              <PhoneFrame image={src} visual={{ ...project.visual, pattern: (['rings', 'grid', 'waves', 'blocks'] as const)[(i + 1) % 4] }} caption={caption} index={i} />
+              {web
+                ? <BrowserShot image={src} visual={{ ...project.visual, pattern: (['blocks', 'grid', 'waves', 'rings'] as const)[i % 4] }} caption={caption} index={i} url={hostOf(project.liveUrl)} />
+                : <PhoneFrame image={src} visual={{ ...project.visual, pattern: (['rings', 'grid', 'waves', 'blocks'] as const)[(i + 1) % 4] }} caption={caption} index={i} />}
             </div>
           )
         })}

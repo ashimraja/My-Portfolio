@@ -4,6 +4,7 @@ import { Reveal, Stagger, StaggerItem } from '@/components/animations/Reveal'
 import { RevealText } from '@/components/animations/RevealText'
 import { usePortfolio } from '@/content/ContentProvider'
 import { ScrollWords } from '@/components/animations/ScrollWords'
+import { AboutPhoto } from './AboutPhoto'
 import { CubeGame } from './CubeGame'
 
 export function About() {
@@ -11,7 +12,7 @@ export function About() {
   return (
     <section id="about" className="section" aria-labelledby="about-title">
       <div className="container-x">
-        <p className="t-label mb-8 flex items-center gap-3"><span className="text-accent">01</span><span aria-hidden className="h-px w-10 bg-border" />{about.kicker}</p>
+        <p className="t-label mb-8 flex items-center gap-3"><span className="text-accent">02</span><span aria-hidden className="h-px w-10 bg-border" />{about.kicker}</p>
         <h2 id="about-title" className="sr-only">{about.words.join(' ')}</h2>
         <div className="grid items-end gap-12 md:grid-cols-12">
           <div className="md:col-span-7">
@@ -28,7 +29,7 @@ export function About() {
         </div>
 
         <div className="mt-16 grid gap-12 md:mt-24 md:grid-cols-12">
-          <div className="md:col-span-5"><ScrollWords className="t-lead" text={about.intro} /></div>
+          <div className="md:col-span-5"><ScrollWords className="t-lead" text={about.intro} /><AboutPhoto /></div>
           <div className="space-y-6 md:col-span-6 md:col-start-7">
             {about.paragraphs.map((p) => <ScrollWords key={p} className="t-body" text={p} />)}
             <Stagger className="mt-10 divide-y divide-border border-y border-border">

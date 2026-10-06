@@ -1,3 +1,4 @@
+import { ScrollWords } from '@/components/animations/ScrollWords'
 import { Stagger, StaggerItem } from '@/components/animations/Reveal'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { useContent } from '@/content/ContentProvider'
@@ -15,7 +16,7 @@ export function EducationList() {
             <StaggerItem as="li" key={e.school} className="grid gap-2 border-b border-border py-8 md:grid-cols-[14rem_1fr_1.2fr] md:gap-10 md:py-10">
               <p className="t-label">{e.period}</p>
               <div><h3 className="t-title-lg">{e.school}</h3><p className="mt-1 text-muted-foreground">{e.degree}</p></div>
-              <p className="t-body">{e.notes}</p>
+              <ScrollWords className="t-body" text={e.notes} />
             </StaggerItem>
           ))}
         </Stagger>

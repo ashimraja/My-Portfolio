@@ -12,7 +12,7 @@ export function Contact() {
   return (
     <section id="contact" className="section rule" aria-labelledby="contact-h">
       <div className="container-x">
-        <p className="t-label mb-8 flex items-center gap-3"><span className="text-accent">08</span><span aria-hidden className="h-px w-10 bg-border" />{contact.kicker}</p>
+        <p className="t-label mb-8 flex items-center gap-3"><span className="text-accent">09</span><span aria-hidden className="h-px w-10 bg-border" />{contact.kicker}</p>
         <h2 id="contact-h" className="sr-only">{contact.headline} Let’s make it {contact.emphasis}</h2>
         <RevealText lines={[contact.headline.toUpperCase()]} className="t-label mb-4 !text-foreground" />
         <RevealText lines={['Let’s make it', `*${contact.emphasis}*`]} className="t-display t-hero" />

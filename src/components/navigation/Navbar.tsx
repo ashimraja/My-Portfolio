@@ -2,20 +2,21 @@ import { AnimatePresence, motion, useMotionValue, useSpring } from 'framer-motio
 import { Lightbulb, Menu, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { homeSections } from '@/data/navigation'
+import { homeSections, withDefaultLinks } from '@/data/navigation'
 import { useContent } from '@/content/ContentProvider'
 import { useActiveSection } from '@/hooks/useActiveSection'
 import { useFinePointer } from '@/hooks/useMediaQuery'
+import { hasBody, formatDate, sortedPosts } from '@/lib/blog'
 import { getLenis } from '@/lib/scroll'
 import { Logo } from '@/components/ui/Logo'
 import { ease } from '@/lib/animations'
 import { hrefFor, useNavTarget } from './useNavTarget'
-import type { NavItem } from '@/types'
+import type { BlogPost, NavItem } from '@/types'
 
 /** Full-width bar at the very top of the page; settles into a floating card once you scroll. Leans toward the pointer. */
 export function Navbar() {
-  const { portfolio, navigation: nav } = useContent().content
-  const navigation = nav.items, navCta = nav.cta
+  const { portfolio, navigation: nav, blog } = useContent().content
+  const navigation = withDefaultLinks(nav.items, blog.items.length > 0), navCta = nav.cta
   const { pathname } = useLocation()
   const go = useNavTarget()
   const fine = useFinePointer()
@@ -76,11 +77,14 @@ export function Navbar() {
 
             <nav aria-label="Primary" className={`hidden items-center gap-1 lg:flex`}>
               {barLinks.map((i) => (
-                <a key={i.label} href={hrefFor(i)} onClick={(e) => onClick(e, i)} aria-current={isActive(i) ? 'page' : undefined}
-                  className={`relative px-5 py-2 font-mono text-[0.78rem] transition-colors hover:text-foreground ${isActive(i) ? 'text-foreground' : 'text-muted-foreground'}`}>
-                  {i.label}
-                  {isActive(i) && <motion.span layoutId="nav-dot" className="absolute inset-x-5 -bottom-0.5 h-px bg-accent" transition={{ type: 'spring', stiffness: 400, damping: 34 }} />}
-                </a>
+                <div key={i.label} className="group relative">
+                  <a href={hrefFor(i)} onClick={(e) => onClick(e, i)} aria-current={isActive(i) ? 'page' : undefined}
+                    className={`relative block px-5 py-2 font-mono text-[0.78rem] transition-colors hover:text-foreground ${isActive(i) ? 'text-foreground' : 'text-muted-foreground'}`}>
+                    {i.label}
+                    {isActive(i) && <motion.span layoutId="nav-dot" className="absolute inset-x-5 -bottom-0.5 h-px bg-accent" transition={{ type: 'spring', stiffness: 400, damping: 34 }} />}
+                  </a>
+                  {i.to === '/blog' && <BlogMenu posts={sortedPosts(blog.items)} onPick={() => (document.activeElement as HTMLElement | null)?.blur()} />}
+                </div>
               ))}
             </nav>
 
@@ -123,5 +127,35 @@ export function Navbar() {
         )}
       </AnimatePresence>
     </>
+  )
+}
+
+/** Hover / keyboard-focus dropdown under “Blog”: the newest articles, each opening its own page, plus the full list. */
+function BlogMenu({ posts, onPick }: { posts: BlogPost[]; onPick: () => void }) {
+  if (!posts.length) return null
+  return (
+    <div className="invisible absolute left-1/2 top-full z-10 w-[min(24rem,90vw)] -translate-x-1/2 translate-y-1 pt-3 opacity-0 transition-[opacity,transform,visibility] duration-300 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
+      <div className="rounded-2xl border border-border bg-background/95 p-2 shadow-[0_30px_60px_-30px_rgba(0,0,0,0.7)] backdrop-blur-xl">
+        <ul>
+          {posts.slice(0, 5).map((p) => {
+            const body = (
+              <>
+                <span className="block text-[0.9rem] font-medium leading-snug text-foreground">{p.title}</span>
+                <span className="t-label mt-1 block !text-[0.74rem]">{formatDate(p.date)}{p.tags[0] ? ` · ${p.tags[0]}` : ''}</span>
+              </>
+            )
+            const cls = 'block rounded-xl px-4 py-3 transition-colors hover:bg-surface-hover focus-visible:bg-surface-hover'
+            return (
+              <li key={p.slug}>
+                {hasBody(p)
+                  ? <Link to={`/blog/${p.slug}`} onClick={onPick} className={cls} data-cursor="hover">{body}</Link>
+                  : <a href={p.mediumUrl} target="_blank" rel="noreferrer noopener" className={cls} data-cursor="hover">{body}</a>}
+              </li>
+            )
+          })}
+        </ul>
+        <Link to="/blog" onClick={onPick} className="mt-1 flex items-center justify-between rounded-xl border-t border-border px-4 py-3 font-mono text-[0.74rem] text-muted-foreground transition-colors hover:text-accent" data-cursor="hover">All articles <span aria-hidden>→</span></Link>
+      </div>
+    </div>
   )
 }

@@ -23,7 +23,7 @@ function TestimonialSlider({ testimonials }: { testimonials: Testimonial[] }) {
   return (
     <section id="testimonials" className="section rule overflow-hidden" aria-labelledby="t-h" onKeyDown={(e) => { if (e.key === 'ArrowRight') go(1); if (e.key === 'ArrowLeft') go(-1) }}>
       <div className="container-x">
-        <SectionHeading index="07" kicker="Kind words" title="What people say." />
+        <SectionHeading index="08" kicker="Kind words" title="What people say." />
         <span id="t-h" className="sr-only">Testimonials</span>
         <div className="relative mt-14 md:mt-20" onPointerMove={onMove}>
           <motion.span aria-hidden style={{ x: markX }} className="t-display pointer-events-none absolute -top-10 left-0 select-none text-[22rem] leading-none text-accent/15 md:-top-24 md:text-[36rem]">“</motion.span>

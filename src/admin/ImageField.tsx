@@ -1,7 +1,7 @@
 import { ImagePlus, X } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { BUCKET, getClient } from './supabase'
-import { prepareImage, slugify } from './image'
+import { SIZE_LADDER, isTooBig, prepareImage, slugify } from './image'
 import { btnCls, inputCls } from './ui'
 
 /** Image URL + preview + upload to the Supabase `portfolio` storage bucket. */
@@ -13,12 +13,18 @@ export function ImageField({ value, onChange }: { value: string; onChange: (v: s
   const upload = async (f: File) => {
     setBusy(true); setError('')
     try {
-      const { blob, ext, type } = await prepareImage(f)
-      const path = `uploads/${Date.now()}-${slugify(f.name)}.${ext}`
       const sb = getClient()
-      const { error: err } = await sb.storage.from(BUCKET).upload(path, blob, { contentType: type, cacheControl: '31536000', upsert: false })
-      if (err) throw err
-      onChange(sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl)
+      // No limit on the file you choose. If the storage server rejects a version as too big, retry with a lighter one.
+      let lastError = 'Upload failed'
+      for (const [maxWidth, quality] of SIZE_LADDER) {
+        const { blob, ext, type } = await prepareImage(f, maxWidth, quality)
+        const path = `uploads/${Date.now()}-${slugify(f.name)}.${ext}`
+        const { error: err } = await sb.storage.from(BUCKET).upload(path, blob, { contentType: type, cacheControl: '31536000', upsert: false })
+        if (!err) { onChange(sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl); return }
+        lastError = err.message
+        if (!isTooBig(err.message) || type !== 'image/webp') break
+      }
+      throw new Error(lastError)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Upload failed')
     } finally { setBusy(false); if (file.current) file.current.value = '' }

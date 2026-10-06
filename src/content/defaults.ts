@@ -1,4 +1,5 @@
 import { afterHours } from '@/data/afterhours'
+import { blog } from '@/data/blog'
 import { education, educationIntro } from '@/data/education'
 import { experience, experienceIntro } from '@/data/experience'
 import { navigation, navCta } from '@/data/navigation'
@@ -20,6 +21,7 @@ export const defaultContent: SiteContent = {
   stack: { intro: stackIntro, categories: stack },
   testimonials: { items: testimonials },
   afterHours,
+  blog,
   navigation: { items: navigation, cta: navCta },
 }
 

@@ -85,7 +85,7 @@ function ObjectList({ f, value, onChange }: { f: Extract<Field, { kind: 'list' }
   return (
     <div className="space-y-2">
       {value.map((item, i) => {
-        const title = (f.titleKey && String(item[f.titleKey] ?? '').trim()) || `${f.label} ${i + 1}`
+        const title = (f.titleFrom?.(item).trim()) || (f.titleKey && String(item[f.titleKey] ?? '').trim()) || `${f.label} ${i + 1}`
         const isOpen = open === i
         return (
           <div key={i} className="rounded-lg border border-border bg-surface/50">

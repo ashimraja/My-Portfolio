@@ -11,7 +11,7 @@ export type Field =
   | { kind: 'strings'; key: string; label: string; multiline?: boolean; hint?: string }
   | { kind: 'images'; key: string; label: string; hint?: string }
   | { kind: 'group'; key: string; label: string; fields: Field[] }
-  | { kind: 'list'; key: string; label: string; titleKey?: string; fields: Field[]; hint?: string }
+  | { kind: 'list'; key: string; label: string; titleKey?: string; titleFrom?: (item: Record<string, unknown>) => string; fields: Field[]; hint?: string }
 
 const t = (key: string, label: string, hint?: string): Field => ({ kind: 'text', key, label, hint })
 const ta = (key: string, label: string, rows = 3, hint?: string): Field => ({ kind: 'textarea', key, label, rows, hint })
@@ -43,11 +43,8 @@ export const sections: SectionDef[] = [
     ]),
   ] },
   { id: 'about', label: 'About & stats', group: 'Site', key: 'portfolio', fields: [
-    group('about', 'About', [t('kicker', 'Small label'), strs('words', 'Big words (3)'), ta('intro', 'Intro sentence'), strs('paragraphs', 'Paragraphs', undefined, true), list('focus', 'Focus rows', 'label', [t('label', 'Label'), ta('text', 'Text', 2)]), group('game', 'Rubik’s cube', [t('hint', 'Screen-reader description')])]),
+    group('about', 'About', [{ kind: 'image', key: 'photo', label: 'Your photo', hint: 'A portrait (4:5 works best, at least 800px wide). It is shown beside your intro in the About section; upload a new one any time to replace it.' }, t('kicker', 'Small label'), strs('words', 'Big words (3)'), ta('intro', 'Intro sentence'), strs('paragraphs', 'Paragraphs', undefined, true), list('focus', 'Focus rows', 'label', [t('label', 'Label'), ta('text', 'Text', 2)]), group('game', 'Rubik’s cube', [t('hint', 'Screen-reader description')])]),
     list('stats', 'Animated statistics', 'label', [{ kind: 'number', key: 'value', label: 'Number' }, t('suffix', 'After the number (e.g. +)'), t('label', 'Label')]),
-  ] },
-  { id: 'philosophy', label: 'Philosophy', group: 'Site', key: 'portfolio', fields: [
-    group('philosophy', 'Engineering philosophy', [t('kicker', 'Small label'), t('title', 'Title'), list('principles', 'Principles', 'title', [t('title', 'Principle'), ta('text', 'Explanation', 2)])]),
   ] },
   { id: 'contact', label: 'Contact & footer', group: 'Site', key: 'portfolio', fields: [
     group('contact', 'Contact section', [t('kicker', 'Small label'), t('headline', 'Small headline'), t('emphasis', 'Highlighted ending'), ta('text', 'Text'), url('emailEndpoint', 'Email form endpoint (Formspree URL)', 'Messages are emailed through this. Leave empty to only save them to the Messages inbox.'), t('successMessage', 'Message after sending')]),
@@ -61,10 +58,12 @@ export const sections: SectionDef[] = [
   { id: 'projects', label: 'Projects', group: 'Content', key: 'projects', fields: [
     group('intro', 'Section heading', [...intro, t('hint', 'Hint'), t('cta', 'Button label')]),
     list('items', 'Projects', 'title', [
-      t('title', 'Title'), t('slug', 'URL slug', 'Used in the address: /work/<slug>. Lowercase, no spaces.'), t('category', 'Short category line'), t('role', 'Your role'),
+      t('title', 'Title'), { kind: 'select', key: 'kind', label: 'Type', options: ['mobile', 'web'], labels: { mobile: 'Mobile application', web: 'Web application' } },
+      t('slug', 'URL slug', 'Used in the address: /work/<slug>. Lowercase, no spaces.'), t('category', 'Short category line'), t('role', 'Your role'),
       ta('summary', 'Description', 4), strs('tech', 'Technologies'),
       { kind: 'image', key: 'cover', label: 'Banner / cover image', hint: 'Wide image (about 2:1).' },
-      group('stores', 'Store links', [url('appStore', 'App Store link'), url('playStore', 'Google Play link')]),
+      group('stores', 'Store links (mobile apps)', [url('appStore', 'App Store link'), url('playStore', 'Google Play link')]),
+      url('liveUrl', 'Live site (web applications)', 'Shown as the “Visit live site” button.'), url('repoUrl', 'Source code (web applications, optional)'),
       list('links', 'Other links', 'label', [t('label', 'Label'), url('href', 'Link')]),
       { kind: 'images', key: 'screenshots', label: 'Screenshots', hint: 'Add as many as you like. They show in a sideways-scrolling row.' },
       strs('highlights', 'What I did (highlights)', undefined, true), strs('features', 'Key features', undefined, true),
@@ -91,10 +90,28 @@ export const sections: SectionDef[] = [
   { id: 'testimonials', label: 'Testimonials', group: 'Content', key: 'testimonials', fields: [
     list('items', 'Testimonials', 'name', [ta('quote', 'Quote', 3), t('name', 'Name'), t('role', 'Role'), t('company', 'Company'), t('initials', 'Initials')], 'The section stays hidden while this list is empty.'),
   ] },
+  { id: 'blog', label: 'Blog', group: 'Content', key: 'blog', fields: [
+    group('intro', 'Section heading', intro),
+    url('mediumProfile', 'Medium profile (optional)', 'Adds an “All articles on Medium” link, e.g. https://medium.com/@yourname'),
+    list('items', 'Articles', 'title', [
+      t('title', 'Title'), t('slug', 'URL slug', 'Used in the address: /blog/<slug>. Lowercase, no spaces.'),
+      t('date', 'Date', 'Format: 2026-03-14'), ta('excerpt', 'Short summary', 2), strs('tags', 'Tags'),
+      { kind: 'image', key: 'cover', label: 'Cover image (optional)', hint: 'Wide image, about 2:1.' },
+      url('mediumUrl', 'Original Medium article', 'Shown as “Read on Medium”. If you add no content blocks below, the article simply links to Medium.'),
+      { kind: 'list', key: 'blocks', label: 'Content blocks', titleFrom: (b) => `${String(b.type)} — ${String(b.text || b.caption || b.video || b.src || '').replace(/\s+/g, ' ').slice(0, 56)}`, hint: 'Build the article block by block, top to bottom.', fields: [
+        { kind: 'select', key: 'type', label: 'Block type', options: ['paragraph', 'heading', 'subheading', 'list', 'quote', 'code', 'image', 'youtube'], labels: { paragraph: 'Paragraph', heading: 'Heading', subheading: 'Sub-heading', list: 'Bullet list (one line per bullet)', quote: 'Quote', code: 'Code block', image: 'Image', youtube: 'YouTube video' } },
+        ta('text', 'Text / code', 6, 'Paragraph, heading, list, quote or code. In paragraphs: **bold**, *italic*, `code` and [link text](https://…) work.'),
+        t('language', 'Code language (code blocks)', 'e.g. tsx, js, json, bash, css, swift, kotlin'),
+        { kind: 'image', key: 'src', label: 'Image (image blocks)' },
+        url('video', 'YouTube link (YouTube blocks)'),
+        t('caption', 'Caption (images, video) or file name (code)'),
+      ] },
+    ], 'Newest posts are shown first, by date.'),
+  ] },
   { id: 'afterhours', label: 'After Hours', group: 'Content', key: 'afterHours', fields: [
     t('kicker', 'Small label'), strs('headline', 'Big headline (3 lines)'), ta('text', 'Intro text'), t('lampHint', 'Hint next to the label'),
     group('cta', 'Buttons', [t('primary', 'Main button'), t('secondary', 'Second button')]), t('projectsTitle', 'Projects heading'),
-    list('projects', 'Side projects', 'title', [t('title', 'Title'), ta('blurb', 'One line', 2), t('year', 'Year'), t('status', 'Status (e.g. Shipped)'), strs('tech', 'Technologies'), url('href', 'Link')], 'The section stays hidden while this list is empty.'),
+    list('projects', 'Side projects', 'title', [t('title', 'Title'), { kind: 'select', key: 'kind', label: 'Type', options: ['web', 'mobile'], labels: { web: 'Web application', mobile: 'Mobile application' } }, ta('blurb', 'One line', 2), t('year', 'Year'), t('status', 'Status (e.g. Shipped)'), strs('tech', 'Technologies'), url('href', 'Link')], 'The section stays hidden while this list is empty.'),
   ] },
   { id: 'navigation', label: 'Navigation', group: 'Content', key: 'navigation', fields: [
     list('items', 'Menu items', 'label', [t('label', 'Label'), t('to', 'Page path (e.g. / or /after-hours)'), t('section', 'Section id on the home page (optional)'), { kind: 'select', key: 'icon', label: 'Show as icon', options: ['', 'lamp'] }]),
