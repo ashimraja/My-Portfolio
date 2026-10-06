@@ -2,6 +2,7 @@ import { AnimatePresence, motion, type Variants } from 'framer-motion'
 import { useLocation, type Location } from 'react-router-dom'
 import { useEffect, type ReactNode } from 'react'
 import { easeInOut } from '@/lib/animations'
+import { usePortfolio } from '@/content/ContentProvider'
 import { scrollToTarget } from '@/lib/scroll'
 
 const content: Variants = {
@@ -15,13 +16,15 @@ const curtain: Variants = {
   exit: { scaleY: 1, transformOrigin: 'bottom', transition: { duration: 0.55, ease: easeInOut } },
 }
 
-const labels: Record<string, string> = { '/': 'Index', '/after-hours': 'After Hours', '/admin': 'Dashboard' }
+const labels: Record<string, string> = { '/blog': 'Blog', '/after-hours': 'After Hours', '/admin': 'Dashboard' }
 
 /** Route-level curtain wipe. Content never blocks: it is interactive as soon as the curtain lifts. */
 export function PageTransition({ children }: { children: (location: Location) => ReactNode }) {
   const location = useLocation()
   const { pathname } = location
-  const label = labels[pathname] ?? (pathname.startsWith('/work') ? 'Case study' : '')
+  const { name } = usePortfolio()
+  // The word shown on the sliding panel: the page you are going to (home shows your name).
+  const label = pathname === '/' ? name : labels[pathname] ?? (pathname.startsWith('/work') ? 'Case study' : pathname.startsWith('/blog') ? 'Article' : '')
   useEffect(() => { if (!window.location.hash) scrollToTarget(0, { immediate: true }) }, [pathname])
   return (
     <AnimatePresence mode="wait" initial={false}>

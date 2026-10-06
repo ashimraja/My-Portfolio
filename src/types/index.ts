@@ -113,7 +113,7 @@ export interface BlogPost {
   mediumUrl?: string
   blocks: BlogBlock[]
 }
-export interface BlogContent { intro: SectionIntro; mediumProfile?: string; items: BlogPost[] }
+export interface BlogContent { intro: SectionIntro; items: BlogPost[] }
 
 export interface SideProject { kind?: ProjectKind; title: string; blurb: string; year: string; status: string; tech: string[]; href: string }
 

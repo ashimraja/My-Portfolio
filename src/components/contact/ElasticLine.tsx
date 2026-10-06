@@ -41,7 +41,7 @@ export function ElasticLine({ cx, cy, active }: { cx: MotionValue<number>; cy: M
   const d = useTransform([cx, cy] as MotionValue<number>[], ([x, y]: number[]) => `M0 ${H / 2} Q ${x * w} ${H / 2 + y * 2} ${w} ${H / 2}`)
   return (
     <svg ref={holder} aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-10 w-full translate-y-1/2 overflow-visible">
-      <motion.path d={d} fill="none" strokeWidth={active ? 1.5 : 1} vectorEffect="non-scaling-stroke" style={{ stroke: active ? 'var(--accent)' : 'var(--border)', transition: 'stroke .4s, stroke-width .4s' }} />
+      <motion.path d={d} fill="none" strokeWidth={active ? 2 : 1} vectorEffect="non-scaling-stroke" className={`transition-[stroke,stroke-width] duration-300 ${active ? 'stroke-accent' : 'stroke-border'}`} />
     </svg>
   )
 }

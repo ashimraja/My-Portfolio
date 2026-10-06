@@ -33,13 +33,9 @@ export default function AfterHours() {
         <ArrowLeft size={16} aria-hidden /> Go back
       </button>
       <main id="main" className="relative">
-        <section aria-label="After Hours" className="relative flex min-h-[100svh] items-end justify-center overflow-clip pb-[9vh] pt-32 text-center">
+        <section aria-label="After Hours" className="relative flex min-h-[100svh] items-end justify-center overflow-clip pb-[9vh] pt-[17rem] text-center md:pt-[21rem]">
           <Lamp />
           <div className="container-x relative w-full">
-            <p className="t-label mb-8 flex items-center justify-center gap-3 !text-foreground">
-              <span aria-hidden className="pulse-dot h-2 w-2 rounded-full bg-accent" />
-              {c.kicker} · {c.lampHint}
-            </p>
             <h1 className="sr-only">{c.headline.join(' ')}</h1>
             <RevealText immediate delay={0.9} lines={c.headline} className="t-display t-hero" />
             <Reveal delay={1.6}><p className="t-body mx-auto mt-8 max-w-lg">{c.text}</p></Reveal>

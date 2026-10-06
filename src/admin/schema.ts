@@ -39,7 +39,7 @@ export const sections: SectionDef[] = [
     group('hero', 'Hero section', [
       t('eyebrow', 'Availability line'), t('greeting', 'Greeting'),
       group('headline', 'Headline', [t('prefix', 'Small first line'), strs('words', 'Rotating words', 'Keep each under ~16 characters.'), strs('lines', 'Two big lines')]),
-      strs('roles', 'Rotating one-liners under the headline'), t('scrollLabel', 'Scroll button label'),
+      strs('roles', 'Rotating one-liners under the headline'),
     ]),
   ] },
   { id: 'about', label: 'About & stats', group: 'Site', key: 'portfolio', fields: [
@@ -92,7 +92,6 @@ export const sections: SectionDef[] = [
   ] },
   { id: 'blog', label: 'Blog', group: 'Content', key: 'blog', fields: [
     group('intro', 'Section heading', intro),
-    url('mediumProfile', 'Medium profile (optional)', 'Adds an “All articles on Medium” link, e.g. https://medium.com/@yourname'),
     list('items', 'Articles', 'title', [
       t('title', 'Title'), t('slug', 'URL slug', 'Used in the address: /blog/<slug>. Lowercase, no spaces.'),
       t('date', 'Date', 'Format: 2026-03-14'), ta('excerpt', 'Short summary', 2), strs('tags', 'Tags'),
@@ -109,7 +108,7 @@ export const sections: SectionDef[] = [
     ], 'Newest posts are shown first, by date.'),
   ] },
   { id: 'afterhours', label: 'After Hours', group: 'Content', key: 'afterHours', fields: [
-    t('kicker', 'Small label'), strs('headline', 'Big headline (3 lines)'), ta('text', 'Intro text'), t('lampHint', 'Hint next to the label'),
+    strs('headline', 'Big headline (3 lines)'), ta('text', 'Intro text'),
     group('cta', 'Buttons', [t('primary', 'Main button'), t('secondary', 'Second button')]), t('projectsTitle', 'Projects heading'),
     list('projects', 'Side projects', 'title', [t('title', 'Title'), { kind: 'select', key: 'kind', label: 'Type', options: ['web', 'mobile'], labels: { web: 'Web application', mobile: 'Mobile application' } }, ta('blurb', 'One line', 2), t('year', 'Year'), t('status', 'Status (e.g. Shipped)'), strs('tech', 'Technologies'), url('href', 'Link')], 'The section stays hidden while this list is empty.'),
   ] },

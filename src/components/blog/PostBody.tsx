@@ -20,7 +20,7 @@ function Block({ b }: { b: BlogBlock }) {
     )
     case 'code': return text.trim() ? <CodeBlock code={text.replace(/\n$/, '')} language={b.language} filename={b.caption} /> : null
     case 'image': return b.src ? (
-      <figure><img src={b.src} alt={b.caption ?? ''} loading="lazy" decoding="async" className="w-full rounded-xl border border-border bg-surface" />{b.caption && <figcaption className="t-label mt-3 text-center">{b.caption}</figcaption>}</figure>
+      <figure><img src={b.src} alt={b.caption ?? ''} loading="lazy" decoding="async" className="mx-auto block h-auto max-h-[22rem] w-auto max-w-full rounded-xl border border-border bg-surface" />{b.caption && <figcaption className="t-label mt-3 text-center">{b.caption}</figcaption>}</figure>
     ) : null
     case 'youtube': {
       const id = youtubeId(b.video)

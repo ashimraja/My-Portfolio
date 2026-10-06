@@ -33,7 +33,7 @@ export default function BlogPostPage() {
             </p>
             {post.excerpt && <p className="t-lead mt-8">{post.excerpt}</p>}
           </div>
-          {post.cover && <div className="mx-auto mt-12 max-w-5xl overflow-hidden rounded-xl border border-border"><img src={post.cover} alt="" className="aspect-[2/1] w-full object-cover" /></div>}
+          {post.cover && <div className="mx-auto mt-10 max-w-2xl overflow-hidden rounded-xl border border-border"><img src={post.cover} alt="" className="aspect-[5/2] w-full object-cover" /></div>}
         </header>
 
         <div className="container-x mt-14 md:mt-20">

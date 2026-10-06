@@ -84,6 +84,8 @@ body {
   outline-offset: 3px;
   border-radius: 2px;
 }
+/* Underline-style fields (contact form) show focus on the stretching line below them, not with a box around the field. */
+.field-line:focus-visible { outline: none; border-radius: 0; }
 
 /* ── Type scale (editorial) ── */
 .t-display { font-family: var(--font-display); font-weight: 400; line-height: 1; letter-spacing: -0.01em; }

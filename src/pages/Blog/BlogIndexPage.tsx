@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowUpRight } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { Link, Navigate } from 'react-router-dom'
 import { RevealText } from '@/components/animations/RevealText'
 import { PostList } from '@/components/blog/PostList'
@@ -8,7 +8,7 @@ import { useSeo } from '@/hooks/useSeo'
 import { sortedPosts } from '@/lib/blog'
 
 export default function BlogIndexPage() {
-  const { intro, items, mediumProfile } = useContent().content.blog
+  const { intro, items } = useContent().content.blog
   useSeo('Blog', intro.title, '/blog')
   if (!items.length) return <Navigate to="/" replace />
   return (
@@ -21,7 +21,6 @@ export default function BlogIndexPage() {
         </header>
         <div className="container-x mt-14 pb-24 md:mt-20 md:pb-32">
           <PostList posts={sortedPosts(items)} />
-          {mediumProfile && <a href={mediumProfile} target="_blank" rel="noreferrer noopener" className="t-label mt-10 inline-flex items-center gap-2 transition-colors hover:!text-accent" data-cursor="hover">All articles on Medium <ArrowUpRight size={14} aria-hidden /></a>}
         </div>
       </main>
       <Footer />

@@ -22,7 +22,7 @@ export function ContactForm() {
     setStatus('sending')
     try { const r = await submitContact(payload, portfolio.contact.emailEndpoint); setStatus(r.ok ? 'done' : 'error'); if (r.ok) form.reset() } catch { setStatus('error') }
   }
-  const field = 'peer block w-full appearance-none rounded-none border-0 bg-transparent px-0 pb-3 pt-2 font-sans text-xl font-medium leading-tight text-foreground outline-none placeholder:text-muted-foreground/40 focus:outline-none focus-visible:outline-none sm:text-2xl'
+  const field = 'field-line peer block w-full appearance-none rounded-none border-0 bg-transparent px-0 pb-3 pt-2 font-sans text-xl font-medium leading-tight text-foreground outline-none placeholder:text-muted-foreground/40 focus:outline-none focus-visible:outline-none sm:text-2xl'
   return (
     <form onSubmit={onSubmit} className="grid gap-x-10 gap-y-9 sm:grid-cols-2" aria-describedby="form-note">
       {fields.map((f, n) => <Field key={f.name} f={f} n={n} inputClass={field} />)}

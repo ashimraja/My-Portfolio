@@ -35,7 +35,7 @@ export function StackExplorer() {
                 <ul>
                   {cat.items.map((it, i) => (
                     <motion.li key={it.name} variants={{ hidden: { opacity: 0, y: 40, rotateX: -30 }, visible: { opacity: 1, y: 0, rotateX: 0, transition: { duration: 0.7, ease } } }}
-                      className="group flex items-baseline justify-between gap-4 border-t border-border py-3 transition-colors hover:bg-surface-hover sm:py-4">
+                      className="group flex items-baseline justify-between gap-4 border-t border-border px-3 py-3 transition-colors hover:bg-surface-hover sm:px-5 sm:py-4">
                       <span className="flex items-baseline gap-4"><span className="text-xs text-muted-foreground">{String(i + 1).padStart(2, '0')}</span><span className="t-title-lg transition-transform duration-500 group-hover:translate-x-3">{it.name}</span></span>
                       <span className="t-label text-right transition-colors group-hover:!text-accent">{it.note}</span>
                     </motion.li>

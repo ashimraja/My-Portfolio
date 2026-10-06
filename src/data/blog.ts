@@ -13,7 +13,6 @@ const COVER = 'https://miro.medium.com/v2/resize:fit:1024/1*_y_mBeGpK-6nhI5We_xw
 /** Articles live in the cloud (dashboard → Blog). Until something is saved there, these built-in posts are shown. */
 export const blog: BlogContent = {
   intro: { kicker: 'Writing', title: 'Notes from the build.' },
-  mediumProfile: 'https://medium.com/@silverskytechnology',
   items: [
     {
       slug: 'why-react-native-apps-get-bloated',

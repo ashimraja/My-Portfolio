@@ -45,6 +45,7 @@ function ProjectShowcaseInner({ projects: all, projectsIntro }: { projects: Proj
   const projects = filter === 'all' ? all : all.filter((p) => kindOf(p) === filter)
   const wrap = useRef<HTMLElement>(null)
   const track = useRef<HTMLDivElement>(null)
+  const pin = useRef<HTMLDivElement>(null)
   const [dist, setDist] = useState(0)
   const { scrollYProgress } = useScroll({ target: wrap, offset: ['start start', 'end end'] })
   const x = useTransform(scrollYProgress, (v) => -v * dist)
@@ -60,18 +61,62 @@ function ProjectShowcaseInner({ projects: all, projectsIntro }: { projects: Proj
     return () => { ro.disconnect(); window.removeEventListener('resize', measure) }
   }, [projects.length]) // the observer only sees the track's own box, so re-measure when the list changes
 
+  // Touch: swiping sideways moves the track too. The track is tied to the page's scroll position (1 px of sideways travel = 1 px of scroll),
+  // so a horizontal swipe just scrolls the page by the same amount, with momentum. Vertical swipes are left to the browser.
+  useEffect(() => {
+    const el = pin.current!
+    let id = -1, sx = 0, sy = 0, lx = 0, lt = 0, vel = 0, raf = 0, moved = false, mode: 'idle' | 'h' | 'v' = 'idle'
+    const scrollBy = (dy: number) => {
+      const w = wrap.current
+      if (!w) return
+      const top = w.getBoundingClientRect().top + window.scrollY, range = w.offsetHeight - window.innerHeight
+      window.scrollTo(0, Math.min(top + range, Math.max(top, window.scrollY + dy)))
+    }
+    const down = (e: PointerEvent) => { if (e.pointerType === 'mouse') return; cancelAnimationFrame(raf); id = e.pointerId; sx = lx = e.clientX; sy = e.clientY; lt = e.timeStamp; vel = 0; moved = false; mode = 'idle' }
+    const move = (e: PointerEvent) => {
+      if (e.pointerId !== id) return
+      if (mode === 'idle') {
+        const dx = e.clientX - sx, dy = e.clientY - sy
+        if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.2) { mode = 'h'; try { el.setPointerCapture(id) } catch { /* capture unavailable */ } }
+        else if (Math.abs(dy) > 8) mode = 'v'
+      }
+      if (mode !== 'h') return
+      const dx = e.clientX - lx, dt = Math.max(1, e.timeStamp - lt)
+      lx = e.clientX; lt = e.timeStamp; moved = true
+      scrollBy(-dx)
+      vel = 0.7 * vel + 0.3 * (-dx / dt)
+    }
+    const up = (e: PointerEvent) => {
+      if (e.pointerId !== id) return
+      id = -1
+      if (mode === 'h' && Math.abs(vel) > 0.05) {
+        let v = vel, last = performance.now()
+        const step = (now: number) => { const dt = now - last; last = now; scrollBy(v * dt); v *= Math.pow(0.94, dt / 16); if (Math.abs(v) > 0.03) raf = requestAnimationFrame(step) }
+        raf = requestAnimationFrame(step)
+      }
+      mode = 'idle'
+    }
+    const click = (e: Event) => { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false } } // a swipe is not a tap on the card under the finger
+    el.addEventListener('pointerdown', down)
+    el.addEventListener('pointermove', move)
+    el.addEventListener('pointerup', up)
+    el.addEventListener('pointercancel', up)
+    el.addEventListener('click', click, true)
+    return () => { cancelAnimationFrame(raf); el.removeEventListener('pointerdown', down); el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up); el.removeEventListener('click', click, true) }
+  }, [])
+
   const intro = (
     <header className="w-[78vw] shrink-0 pr-6 md:w-[min(60vw,44rem)] md:pr-10">
       <p className="t-label mb-6 flex items-center gap-3"><span className="text-accent">01</span><span aria-hidden className="h-px w-10 bg-border" />{projectsIntro.kicker}</p>
       <RevealText as="h2" lines={projectsIntro.title} className="t-display t-xl" />
-      <p className="t-label mt-8 flex items-center gap-3">Scroll <span aria-hidden className="h-px w-16 bg-accent" /></p>
+      <p className="t-label mt-8 flex items-center gap-3">Scroll or swipe <span aria-hidden className="h-px w-16 bg-accent" /></p>
     </header>
   )
 
   return (
     <section id="work" ref={wrap} aria-labelledby="work-title" style={{ height: dist + (typeof window === 'undefined' ? 0 : window.innerHeight) }} className="relative">
       <span id="work-title" className="sr-only">Selected work</span>
-      <div className="sticky top-0 flex h-[100svh] flex-col overflow-hidden pt-28">
+      <div ref={pin} className="sticky top-0 flex h-[100svh] touch-pan-y flex-col overflow-hidden pt-28">
         <motion.div ref={track} style={{ x }} className="flex min-h-0 flex-1 items-center gap-8 pl-[var(--gutter)] pr-[12vw] md:gap-16 md:pr-[20vw] will-change-transform">
           {intro}
           {projects.map((p, i) => <Panel key={p.slug} p={p} i={i} total={projects.length} />)}
