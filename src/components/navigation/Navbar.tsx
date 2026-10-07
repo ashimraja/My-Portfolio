@@ -7,7 +7,6 @@ import { useContent } from '@/content/ContentProvider'
 import { useActiveSection } from '@/hooks/useActiveSection'
 import { useFinePointer } from '@/hooks/useMediaQuery'
 import { getLenis } from '@/lib/scroll'
-import { Logo } from '@/components/ui/Logo'
 import { ease } from '@/lib/animations'
 import { hrefFor, useNavTarget } from './useNavTarget'
 import type { NavItem } from '@/types'
@@ -70,8 +69,7 @@ export function Navbar() {
         <motion.div style={compact ? { x: mx, y: my } : undefined} className="w-full" animate={{ maxWidth: compact ? 1120 : 2400 }} transition={{ duration: 0.7, ease }}>
           <div className={`pointer-events-auto flex items-center justify-between gap-4 border transition-[background-color,border-color,border-radius,padding,backdrop-filter] duration-700 ${compact ? 'rounded-2xl border-border bg-background/80 py-2.5 pl-5 pr-2.5 backdrop-blur-xl' : 'rounded-none border-transparent bg-transparent px-[var(--gutter)] py-5'}`}>
             <Link to="/" aria-label={`${portfolio.name} — home`} data-cursor="hover" className="flex shrink-0 items-center gap-3 leading-none">
-              <Logo className="h-9 w-9 text-foreground" />
-              <span className="hidden text-base font-medium tracking-tight min-[400px]:inline sm:text-lg">{portfolio.name}</span>
+              <span className="text-base font-medium tracking-tight sm:text-lg">{portfolio.name}</span>
             </Link>
 
             <nav aria-label="Primary" className={`hidden items-center gap-1 lg:flex`}>

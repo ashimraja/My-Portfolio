@@ -49,3 +49,30 @@ drop policy if exists "storage: admin write" on storage.objects;
 create policy "storage: admin write" on storage.objects for all to authenticated
   using      (bucket_id = 'portfolio' and (auth.jwt() ->> 'email') = 'you@example.com')
   with check (bucket_id = 'portfolio' and (auth.jwt() ->> 'email') = 'you@example.com');
+
+-- ───────────────────────── events (anonymous visitor analytics) ─────────────────────────
+-- No IP addresses, no cookies: a random id per browser and one per visit. Anyone may add rows; only the admin can read or delete them.
+create table if not exists public.events (
+  id         bigint generated always as identity primary key,
+  created_at timestamptz not null default now(),
+  visitor    text not null check (char_length(visitor) <= 64),
+  session    text not null check (char_length(session) <= 64),
+  type       text not null check (type in ('pageview','project_click','store_click','outbound','resume_download','contact','section')),
+  path       text check (char_length(path)     <= 300),
+  target     text check (char_length(target)   <= 200),
+  referrer   text check (char_length(referrer) <= 200),
+  source     text check (char_length(source)   <= 100),
+  device     text check (char_length(device)   <= 20),
+  browser    text check (char_length(browser)  <= 30),
+  tz         text check (char_length(tz)       <= 60)
+);
+create index if not exists events_created_at_idx on public.events (created_at desc);
+alter table public.events enable row level security;
+
+drop policy if exists "events: anyone can add" on public.events;
+create policy "events: anyone can add" on public.events for insert to anon, authenticated with check (true);
+
+drop policy if exists "events: admin manage" on public.events;
+create policy "events: admin manage" on public.events for all to authenticated
+  using      ((auth.jwt() ->> 'email') = 'you@example.com')
+  with check ((auth.jwt() ->> 'email') = 'you@example.com');

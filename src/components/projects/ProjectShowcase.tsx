@@ -14,7 +14,7 @@ const idx = (n: number) => String(n + 1).padStart(2, '0')
 
 function Panel({ p, i, total }: { p: Project; i: number; total: number }) {
   return (
-    <Link to={`/work/${p.slug}`} data-cursor="view" data-cursor-label="VIEW" aria-label={`${p.title} — ${p.category}. Open case study`}
+    <Link to={`/work/${p.slug}`} data-track="project_click" data-target={p.slug} data-cursor="view" data-cursor-label="VIEW" aria-label={`${p.title} — ${p.category}. Open case study`}
       className="group flex h-full w-[82vw] md:w-[min(72vw,60rem)] shrink-0 flex-col justify-center gap-6">
       <div className="relative aspect-[4/3] max-h-[52vh] md:aspect-[2/1] w-full overflow-hidden border border-border">
         <ProjectCover project={p} className="h-full w-full transition-transform duration-[1200ms] ease-out group-hover:scale-105" />
@@ -117,9 +117,10 @@ function ProjectShowcaseInner({ projects: all, projectsIntro }: { projects: Proj
     <section id="work" ref={wrap} aria-labelledby="work-title" style={{ height: dist + (typeof window === 'undefined' ? 0 : window.innerHeight) }} className="relative">
       <span id="work-title" className="sr-only">Selected work</span>
       <div ref={pin} className="sticky top-0 flex h-[100svh] touch-pan-y flex-col overflow-hidden pt-28">
-        <motion.div ref={track} style={{ x }} className="flex min-h-0 flex-1 items-center gap-8 pl-[var(--gutter)] pr-[12vw] md:gap-16 md:pr-[20vw] will-change-transform">
+        <motion.div ref={track} style={{ x }} className="flex min-h-0 flex-1 items-center gap-8 pl-[var(--gutter)] md:gap-16 will-change-transform">
           {intro}
           {projects.map((p, i) => <Panel key={p.slug} p={p} i={i} total={projects.length} />)}
+          <div aria-hidden className="h-px w-[var(--gutter)] shrink-0 md:w-[8vw]" />
         </motion.div>
         <div className="container-x flex w-full items-center gap-4 pb-8 sm:gap-6">
           <div aria-hidden className="flex flex-1 items-center gap-4 sm:gap-6">

@@ -15,7 +15,7 @@ export default function BlogIndexPage() {
     <>
       <main id="main">
         <header className="container-x pt-36 md:pt-44">
-          <Link to="/#blog" className="t-label mb-10 inline-flex items-center gap-2 hover:!text-accent" data-cursor="hover"><ArrowLeft size={14} aria-hidden /> Home</Link>
+          <Link to="/" className="t-label mb-10 inline-flex items-center gap-2 hover:!text-accent" data-cursor="hover"><ArrowLeft size={14} aria-hidden /> Home</Link>
           <p className="t-label mb-6">{intro.kicker}</p>
           <RevealText as="h1" lines={intro.title} className="t-display t-xl max-w-[16ch]" immediate delay={0.9} />
         </header>

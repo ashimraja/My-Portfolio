@@ -1,13 +1,16 @@
 import type { Session } from '@supabase/supabase-js'
 import { ChevronDown, ExternalLink, LogOut, Menu, Save, Undo2, UploadCloud } from 'lucide-react'
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
+import { AnalyticsPanel } from '@/admin/AnalyticsPanel'
 import { Editor } from '@/admin/Editor'
 import { MessagesPanel } from '@/admin/MessagesPanel'
+import { TemplatesPanel } from '@/admin/TemplatesPanel'
 import { sections } from '@/admin/schema'
 import { getClient } from '@/admin/supabase'
 import { btnCls, btnPrimary, inputCls, Labeled } from '@/admin/ui'
 import { defaultContent, contentKeys } from '@/content/defaults'
 import { mergeDeep } from '@/content/merge'
+import { IGNORE_KEY } from '@/lib/analytics'
 import { cloudEnabled } from '@/lib/cloud'
 import { applyAccent } from '@/lib/theme'
 import type { ContentKey, SiteContent } from '@/types'
@@ -104,6 +107,8 @@ function Dashboard({ email }: { email: string }) {
   const [busy, setBusy] = useState(false)
   const [raw, setRaw] = useState<string | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
+  // Signing in to the dashboard marks this browser as yours, so your own visits stay out of the numbers.
+  useEffect(() => { try { localStorage.setItem(IGNORE_KEY, '1') } catch { /* storage unavailable */ } }, [])
   const pick = (id: string) => { setActive(id); setRaw(null); setMenuOpen(false) }
 
   const say = useCallback((text: string, ok = true) => { setToast({ text, ok }); setTimeout(() => setToast(null), 3500) }, [])
@@ -152,7 +157,7 @@ function Dashboard({ email }: { email: string }) {
   const discard = (k: ContentKey) => setKey(k, JSON.parse(saved[k]))
   const resetDefault = (k: ContentKey) => { if (confirm('Replace this section with the built-in default content?')) setKey(k, defaultContent[k]) }
 
-  const currentLabel = active === 'resume' ? 'Resume builder' : active === 'messages' ? 'Messages' : (sections.find((x) => x.id === active)?.label ?? 'Menu')
+  const currentLabel = active === 'resume' ? 'Resume builder' : active === 'analytics' ? 'Analytics' : active === 'templates' ? 'Cover letters & messages' : active === 'messages' ? 'Messages' : (sections.find((x) => x.id === active)?.label ?? 'Menu')
   const grouped = sections.reduce<Record<string, typeof sections>>((acc, s) => { (acc[s.group] ??= []).push(s); return acc }, {})
 
   return (
@@ -184,7 +189,9 @@ function Dashboard({ email }: { email: string }) {
               </div>
             ))}
             <div><p className="mb-1.5 px-3 text-xs text-muted-foreground">Tools</p>
-              <button onClick={() => pick('resume')} className={`flex w-full items-center rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${active === 'resume' ? 'bg-accent text-accent-foreground' : 'hover:bg-surface'}`}>Resume builder</button></div>
+              <button onClick={() => pick('resume')} className={`flex w-full items-center rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${active === 'resume' ? 'bg-accent text-accent-foreground' : 'hover:bg-surface'}`}>Resume builder</button>
+              <button onClick={() => pick('analytics')} className={`flex w-full items-center rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${active === 'analytics' ? 'bg-accent text-accent-foreground' : 'hover:bg-surface'}`}>Analytics</button>
+              <button onClick={() => pick('templates')} className={`flex w-full items-center rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${active === 'templates' ? 'bg-accent text-accent-foreground' : 'hover:bg-surface'}`}>Cover letters</button></div>
             <div><p className="mb-1.5 px-3 text-xs text-muted-foreground">Inbox</p>
               <button onClick={() => pick('messages')} className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${active === 'messages' ? 'bg-accent text-accent-foreground' : 'hover:bg-surface'}`}>
                 Messages{unread > 0 && <span className="rounded-full bg-accent px-2 text-xs font-semibold text-accent-foreground">{unread}</span>}
@@ -197,6 +204,8 @@ function Dashboard({ email }: { email: string }) {
           {state === 'loading' && <p className="text-muted-foreground">Loading content…</p>}
           {state === 'error' && <p className="text-red-400">Couldn’t reach the database. Check your keys and that schema.sql has been run.</p>}
           {state === 'ready' && active === 'resume' && (<><h1 className="t-title-lg mb-5">Resume builder</h1><Suspense fallback={<p className="text-muted-foreground">Loading…</p>}><ResumePanel site={drafts} say={say} /></Suspense></>)}
+          {state === 'ready' && active === 'analytics' && (<><h1 className="t-title-lg mb-5">Analytics</h1><AnalyticsPanel site={drafts} /></>)}
+          {state === 'ready' && active === 'templates' && (<><h1 className="t-title-lg mb-5">Cover letters &amp; messages</h1><TemplatesPanel site={drafts} say={say} /></>)}
           {state === 'ready' && active === 'messages' && (<><h1 className="t-title-lg mb-5">Messages</h1><MessagesPanel onUnread={setUnread} /></>)}
           {state === 'ready' && section && key && (
             <>

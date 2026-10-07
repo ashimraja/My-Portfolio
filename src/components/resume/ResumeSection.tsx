@@ -6,6 +6,7 @@ import { Reveal } from '@/components/animations/Reveal'
 import { ScrollWords } from '@/components/animations/ScrollWords'
 import { Button } from '@/components/ui/Button'
 import { SectionHeading } from '@/components/ui/SectionHeading'
+import { track } from '@/lib/analytics'
 import { useContent } from '@/content/ContentProvider'
 
 const MM = 96 / 25.4
@@ -35,6 +36,7 @@ export default function ResumeSection() {
   const { portfolio } = content
 
   const download = () => {
+    track('resume_download')
     const prev = document.title
     document.title = `${data.name} - Resume`
     document.body.classList.add('resume-printing')

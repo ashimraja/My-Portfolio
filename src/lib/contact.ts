@@ -1,3 +1,4 @@
+import { track } from '@/lib/analytics'
 import { SUPABASE_URL, cloudEnabled, restHeaders } from '@/lib/cloud'
 
 export interface ContactPayload { name: string; email: string; company: string; project: string; message: string }
@@ -35,5 +36,7 @@ export async function submitContact(payload: ContactPayload, emailEndpoint?: str
     if (import.meta.env.DEV) console.info('[contact] simulated submit (nothing configured)', payload)
     return { ok: true }
   }
-  return { ok: (await Promise.all(jobs)).some(Boolean) }
+  const ok = (await Promise.all(jobs)).some(Boolean)
+  if (ok) track('contact')
+  return { ok }
 }

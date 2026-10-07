@@ -1,6 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { BlogSection } from '@/components/blog/BlogSection'
 import { Contact } from '@/components/contact/Contact'
 import { EducationList } from '@/components/experience/EducationList'
 import { ExperienceTimeline } from '@/components/experience/ExperienceTimeline'
@@ -21,14 +20,17 @@ export default function Home() {
   const { hash } = useLocation()
   useEffect(() => {
     if (!hash) return
-    const t = setTimeout(() => scrollToTarget(hash, { immediate: true }), 600) // after curtain lifts
+    const t = setTimeout(() => {
+      scrollToTarget(hash, { immediate: true })
+      history.replaceState(history.state, '', window.location.pathname + window.location.search) // the hash only carried us here; keep the URL clean
+    }, 600) // after curtain lifts
     return () => clearTimeout(t)
   }, [hash])
   return (
     <>
       <Hero /><ProjectShowcase /><About /><StackExplorer /><ExperienceTimeline /><EducationList />
       <Suspense fallback={<div id="resume" className="min-h-[40vh]" />}><ResumeSection /></Suspense>
-      <BlogSection /><Testimonials /><Contact /><Footer />
+      <Testimonials /><Contact /><Footer />
     </>
   )
 }

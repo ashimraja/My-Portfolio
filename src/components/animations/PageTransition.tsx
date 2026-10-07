@@ -10,10 +10,11 @@ const content: Variants = {
   animate: { opacity: 1 },
   exit: { opacity: 0, transition: { delay: 0.6, duration: 0.01 } },
 }
+// Slides with translateY (compositor-only) rather than scaleY, which re-rasterised the label on every frame and lagged on phones.
 const curtain: Variants = {
-  initial: { scaleY: 1, transformOrigin: 'top' },
-  animate: { scaleY: 0, transformOrigin: 'top', transition: { duration: 0.7, ease: easeInOut, delay: 0.15 } },
-  exit: { scaleY: 1, transformOrigin: 'bottom', transition: { duration: 0.55, ease: easeInOut } },
+  initial: { y: '0%' },
+  animate: { y: '-100%', transition: { duration: 0.7, ease: easeInOut, delay: 0.15 } },
+  exit: { y: ['100%', '0%'], transition: { duration: 0.55, ease: easeInOut } },
 }
 
 const labels: Record<string, string> = { '/blog': 'Blog', '/after-hours': 'After Hours', '/admin': 'Dashboard' }
@@ -30,7 +31,7 @@ export function PageTransition({ children }: { children: (location: Location) =>
     <AnimatePresence mode="wait" initial={false}>
       <motion.div key={pathname} initial="initial" animate="animate" exit="exit">
         {/* Curtain is a sibling of the content, so hiding the old page never hides the curtain (no blink). */}
-        <motion.div variants={curtain} aria-hidden className="pointer-events-none fixed inset-0 z-[80] flex items-end bg-accent p-6 text-accent-foreground">
+        <motion.div variants={curtain} aria-hidden className="pointer-events-none fixed inset-0 z-[80] flex items-end bg-accent p-6 text-accent-foreground will-change-transform">
           <span className="t-display t-xl">{label}</span>
         </motion.div>
         <motion.div variants={content}>{children(location)}</motion.div>

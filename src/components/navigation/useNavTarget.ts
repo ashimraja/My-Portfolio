@@ -8,7 +8,7 @@ export function useNavTarget() {
   return (item: NavItem) => {
     if (item.section) {
       const id = item.section
-      if (pathname === '/') { history.replaceState(null, '', `/#${id}`); scrollToTarget(`#${id}`) }
+      if (pathname === '/') scrollToTarget(`#${id}`) // the URL stays "/": a hash would only confuse people about where they landed
       else navigate(`/#${id}`)
     } else navigate(item.to)
   }

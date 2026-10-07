@@ -29,8 +29,8 @@ export function ExperienceTimeline() {
         <SectionHeading index="04" kicker={experienceIntro.kicker} title={experienceIntro.title} />
         <span id="exp-h" className="sr-only">Experience</span>
         <div className="relative mt-16 md:mt-24">
-          <div aria-hidden className="absolute bottom-0 left-[0.45rem] top-0 w-px bg-border md:left-[calc(25%-1px)]">
-            <motion.div className="h-full w-full origin-top bg-accent" style={{ scaleY: progress }} />
+          <div aria-hidden className="absolute bottom-0 left-[calc(0.3125rem-0.5px)] top-0 w-px bg-border md:left-[calc(25%-1px)]">
+            <motion.div className="h-full w-full origin-top bg-accent will-change-transform" style={{ scaleY: desktop ? progress : scrollYProgress }} />
           </div>
           <ol ref={listRef} className="relative">
             {experience.map((e, i) => {
@@ -42,8 +42,8 @@ export function ExperienceTimeline() {
                     <p className={`t-stat transition-all duration-700 ${on ? 'text-accent' : 'text-muted-foreground/60'}`}>{e.start}<span className="md:block"><span className="md:hidden"> — </span>{e.end}</span></p>
                   </div>
                   <div className="relative md:pl-14">
-                    <span aria-hidden className={`absolute -left-[2.05rem] top-3 h-2.5 w-2.5 rounded-full border transition-all duration-500 md:-left-[0.35rem] ${on ? 'scale-150 border-accent bg-accent' : 'border-muted-foreground bg-background'}`} />
-                    <div className={`transition-opacity duration-700 ${on ? 'opacity-100' : 'opacity-45'}`}>
+                    <span aria-hidden className={`absolute -left-8 top-3 h-2.5 w-2.5 rounded-full border transition-all duration-500 will-change-transform md:-left-[0.35rem] ${on ? 'border-accent bg-accent md:scale-150' : 'border-muted-foreground bg-background'}`} />
+                    <div className={`lg:transition-opacity lg:duration-700 ${on ? 'opacity-100' : 'lg:opacity-45'}`}>
                       <h3 className="t-title-lg">{e.role}</h3>
                       <p className="t-label mt-3 !text-foreground">{e.company} <span className="text-muted-foreground">· {e.period}</span></p>
                     </div>

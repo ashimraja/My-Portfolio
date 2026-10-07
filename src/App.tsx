@@ -1,5 +1,5 @@
 import { MotionConfig } from 'framer-motion'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
 import { PageTransition } from '@/components/animations/PageTransition'
 import { ScrollProgress } from '@/components/animations/ScrollProgress'
@@ -7,6 +7,7 @@ import { Navbar } from '@/components/navigation/Navbar'
 import { Cursor } from '@/components/ui/Cursor'
 import { IntroLoader } from '@/components/ui/IntroLoader'
 import { useSmoothScroll } from '@/hooks/useSmoothScroll'
+import { listenForClicks, track } from '@/lib/analytics'
 import Home from '@/pages/Home/Home'
 
 // Route-level code splitting: only Home is in the entry chunk.
@@ -18,7 +19,10 @@ const Admin = lazy(() => import('@/pages/Admin/AdminPage'))
 
 export default function App() {
   useSmoothScroll()
-  const isAdmin = useLocation().pathname.startsWith('/admin')
+  const { pathname } = useLocation()
+  const isAdmin = pathname.startsWith('/admin')
+  useEffect(() => { track('pageview') }, [pathname])
+  useEffect(() => listenForClicks(), [])
   return (
     <MotionConfig reducedMotion="user">
       <ScrollProgress />

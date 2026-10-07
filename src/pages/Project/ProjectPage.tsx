@@ -57,7 +57,7 @@ export default function ProjectPage() {
     p.screenshots.length > 0 && { title: web ? 'Screens' : 'Screenshots', body: <ScreenshotGallery project={p} /> },
     (p.links.length > 0 || p.liveUrl || p.repoUrl || p.stores.appStore || p.stores.playStore) && { title: web ? 'Visit' : 'Get the app', body: (
       <>
-        {web ? <div className={p.links.length ? 'mb-8' : ''}>{webActions}</div> : <StoreButtons stores={p.stores} className={p.links.length ? 'mb-8' : ''} />}
+        {web ? <div className={p.links.length ? 'mb-8' : ''}>{webActions}</div> : <StoreButtons stores={p.stores} slug={p.slug} className={p.links.length ? 'mb-8' : ''} />}
         <ul className="space-y-3">{p.links.map((l) => <li key={l.label}><a href={l.href} target="_blank" rel="noreferrer noopener" className="t-title-lg inline-flex items-center gap-3 transition-colors hover:text-accent">{l.label} <ArrowUpRight aria-hidden /></a></li>)}</ul>
       </>) },
   ].filter(Boolean) as { title: string; body: ReactNode }[]
