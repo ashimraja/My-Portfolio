@@ -19,7 +19,7 @@ const stored = (store: Storage, key: string, make: () => string) => {
 const enabled = () =>
   cloudEnabled &&
   (!import.meta.env.DEV || attempt(() => localStorage.getItem('analytics-dev') === '1', false)) &&
-  !attempt(() => localStorage.getItem(IGNORE), null) &&
+  !attempt(() => localStorage.getItem(IGNORE_KEY), null) &&
   navigator.doNotTrack !== '1' &&
   !navigator.webdriver &&
   !/bot|crawl|spider|headless|lighthouse|preview/i.test(navigator.userAgent) &&
