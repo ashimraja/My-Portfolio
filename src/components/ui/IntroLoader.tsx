@@ -42,7 +42,7 @@ export function IntroLoader() {
         <motion.div role="status" aria-label={`Loading ${portfolio.name}`} className="fixed inset-0 z-[95] flex flex-col justify-between bg-background p-[var(--gutter)] text-foreground"
           exit={{ y: '-100%', transition: { duration: reduce ? 0.2 : 0.7, ease: easeInOut } }}>
           <p className="t-label flex justify-between"><span>{portfolio.title}</span><span>{portfolio.location}</span></p>
-          <h1 aria-hidden className="t-display flex flex-wrap text-[clamp(3.6rem,16vw,17rem)] leading-[0.85]">
+          <h1 aria-hidden className="t-display flex flex-wrap text-[clamp(3rem,11vw,12rem)] leading-[0.9]">
             {letters.map((ch, i) => (
               <span key={i} className="inline-block overflow-hidden pb-[0.08em]">
                 <motion.span className="inline-block" initial={{ y: reduce ? 0 : '110%' }} animate={{ y: 0 }} transition={{ duration: 0.7, ease, delay: reduce ? 0 : 0.05 + i * 0.03 }}>

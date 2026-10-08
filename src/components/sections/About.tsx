@@ -19,7 +19,7 @@ export function About() {
             <div aria-hidden className="t-display t-hero">
               {about.words.map((w, i) => (
                 <Parallax key={w} speed={i % 2 ? 10 : -10} className={`pb-[0.06em] ${i === 1 ? 'md:pl-[14vw]' : i === 2 ? 'md:pl-[4vw]' : ''}`}>
-                  <RevealText as="div" lines={w} />
+                  <RevealText as="div" lines={w} tone={i === about.words.length - 1 ? 'strong' : 'dim'} />
                 </Parallax>
               ))}
             </div>

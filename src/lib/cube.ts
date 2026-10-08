@@ -35,7 +35,8 @@ export function viewMatrix(aDeg: number, bDeg: number): M3 {
 
 export const matrix3d = (m: M3, t: V3) => `matrix3d(${m[0]},${m[3]},${m[6]},0,${m[1]},${m[4]},${m[7]},0,${m[2]},${m[5]},${m[8]},0,${t[0]},${t[1]},${t[2]},1)`
 
-export const COLORS = { white: '#f3f3ee', yellow: '#ffd321', green: '#1fa85b', blue: '#2063d8', red: '#d8332f', orange: '#ff8a1f' }
+/** A softened cube palette: the six faces stay easy to tell apart, but nothing is neon, so it sits quietly on the black-and-white site. */
+export const COLORS = { white: '#f1f0ea', yellow: '#e9c85a', green: '#4aa57a', blue: '#4a74c9', red: '#cf5a4c', orange: '#e48a4a' }
 
 export interface FaceDef { name: string; normal: V3; color: string; css: string }
 /** Local faces of a cubie. `css` places a face on that side (outward normal = the listed direction). */

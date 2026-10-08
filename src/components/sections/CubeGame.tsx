@@ -110,10 +110,10 @@ export function CubeGame() {
           {cubies.current.map((c, i) => (
             <div key={i} ref={(el) => { nodes.current[i] = el }} className="absolute [transform-style:preserve-3d]" style={{ width: S, height: S, left: -S / 2, top: -S / 2 }}>
               {FACES.map((f) => (
-                <div key={`k${f.name}`} className="absolute inset-0 [backface-visibility:hidden]" style={{ background: '#0b0b0c', transform: `${f.css} translateZ(${S / 2}px)` }} />
+                <div key={`k${f.name}`} className="absolute inset-0 [backface-visibility:hidden]" style={{ background: '#121211', transform: `${f.css} translateZ(${S / 2}px)` }} />
               ))}
               {stickerFaces(c).map((f) => (
-                <div key={f.name} data-sticker data-cubie={i} data-face={FACES.indexOf(f)} className="absolute inset-[4px] rounded-[7px] [backface-visibility:hidden]"
+                <div key={f.name} data-sticker data-cubie={i} data-face={FACES.indexOf(f)} className="absolute inset-[5px] rounded-[9px] [backface-visibility:hidden]"
                   style={{ background: f.color, transform: `${f.css} translateZ(${S / 2 + 0.6}px)` }} />
               ))}
             </div>

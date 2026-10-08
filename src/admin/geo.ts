@@ -23,7 +23,7 @@ add('ET', 'Africa/Addis_Ababa'); add('DZ', 'Africa/Algiers'); add('TN', 'Africa/
 add('AU', 'Australia/Sydney Australia/Melbourne Australia/Brisbane Australia/Perth Australia/Adelaide'); add('NZ', 'Pacific/Auckland')
 
 const names = (() => { try { return new Intl.DisplayNames(['en'], { type: 'region' }) } catch { return null } })()
-const flag = (code: string) => String.fromCodePoint(...[...code].map((c) => 127397 + c.charCodeAt(0)))
+export const flag = (code: string) => String.fromCodePoint(...[...code].map((c) => 127397 + c.charCodeAt(0)))
 
 /** "🇮🇳 India", or "Unknown" for UTC and zones we have not mapped. */
 export function countryOf(tz: string | null | undefined): string {
@@ -38,4 +38,16 @@ export function cityOf(tz: string | null | undefined): string | null {
   const c = city === 'Calcutta' ? 'Kolkata' : city === 'Saigon' ? 'Ho Chi Minh City' : city === 'Kiev' ? 'Kyiv' : city
   const country = countryOf(tz)
   return country === 'Unknown' ? c : `${c}, ${country.replace(/^\S+\s/, '')}`
+}
+
+export interface Place { country_code?: string | null; country?: string | null; region?: string | null; city?: string | null; tz?: string | null }
+
+/** The real location recorded for a visit, or the timezone-based guess for visits from before locations were recorded. `real` tells which. */
+export function placeOf(e: Place): { country: string; city: string | null; real: boolean } {
+  if (e.country_code) {
+    const name = e.country || names?.of(e.country_code) || e.country_code
+    const where = [e.city, e.region && e.region !== e.city ? e.region : null].filter(Boolean).join(', ')
+    return { country: `${flag(e.country_code)} ${name}`, city: where ? `${where}, ${name}` : null, real: true }
+  }
+  return { country: countryOf(e.tz), city: cityOf(e.tz), real: false }
 }

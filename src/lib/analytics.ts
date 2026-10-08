@@ -1,4 +1,5 @@
 import { SUPABASE_URL, cloudEnabled, restHeaders } from '@/lib/cloud'
+import { getGeo } from '@/lib/geo'
 
 export type EventType = 'pageview' | 'project_click' | 'store_click' | 'outbound' | 'resume_download' | 'contact' | 'section'
 
@@ -60,12 +61,26 @@ export function track(type: EventType, target?: string, opts: { once?: boolean }
       path: window.location.pathname, target: target?.slice(0, 200) ?? null, referrer: referrer || null, source: source || null,
       device: device(), browser: browser(), tz: attempt(() => Intl.DateTimeFormat().resolvedOptions().timeZone, ''),
     }
-    void fetch(`${SUPABASE_URL}/rest/v1/events`, {
-      method: 'POST', keepalive: true,
-      headers: { ...restHeaders(), 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify(row),
-    }).catch(() => { /* analytics must never get in the way */ })
+    void send(row)
   } catch { /* ignore */ }
+}
+
+const post = (body: object) => fetch(`${SUPABASE_URL}/rest/v1/events`, {
+  method: 'POST', keepalive: true,
+  headers: { ...restHeaders(), 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+  body: JSON.stringify(body),
+})
+
+/** Adds the visit's real location (looked up once per visit; waited for at most 1.5 s). If the table has not been given the location columns yet
+ *  (supabase/geo.sql), the first rejected insert switches location off for the rest of the visit and is resent without it, so nothing is ever lost. */
+async function send(row: object) {
+  try {
+    const geoOff = attempt(() => sessionStorage.getItem('a-geo-off') === '1', false)
+    const geo = geoOff ? null : await Promise.race([getGeo(), new Promise<null>((r) => setTimeout(() => r(null), 1500))])
+    if (!geo) { await post(row); return }
+    const res = await post({ ...row, ...geo })
+    if (res.status === 400) { attempt(() => sessionStorage.setItem('a-geo-off', '1'), null); await post(row) }
+  } catch { /* analytics must never get in the way */ }
 }
 
 /** One delegated listener: anything with data-track="type" data-target="x" is counted, and so is any link that leaves the site. */

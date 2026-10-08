@@ -3,9 +3,8 @@ import { useLocation } from 'react-router-dom'
 import { Contact } from '@/components/contact/Contact'
 import { EducationList } from '@/components/experience/EducationList'
 import { ExperienceTimeline } from '@/components/experience/ExperienceTimeline'
-import { Hero } from '@/components/hero/Hero'
 import { Footer } from '@/components/layout/Footer'
-import { ProjectShowcase } from '@/components/projects/ProjectShowcase'
+import { WorkStage } from '@/components/projects/WorkStage'
 import { About } from '@/components/sections/About'
 import { StackExplorer } from '@/components/stack/StackExplorer'
 import { Testimonials } from '@/components/testimonials/Testimonials'
@@ -28,7 +27,7 @@ export default function Home() {
   }, [hash])
   return (
     <>
-      <Hero /><ProjectShowcase /><About /><StackExplorer /><ExperienceTimeline /><EducationList />
+      <WorkStage /><About /><StackExplorer /><ExperienceTimeline /><EducationList />
       <Suspense fallback={<div id="resume" className="min-h-[40vh]" />}><ResumeSection /></Suspense>
       <Testimonials /><Contact /><Footer />
     </>

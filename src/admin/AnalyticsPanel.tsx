@@ -1,13 +1,14 @@
 import { RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { SiteContent } from '@/types'
-import { cityOf, countryOf } from './geo'
+import { placeOf } from './geo'
 import { getClient } from './supabase'
 import { btnCls } from './ui'
 
-interface Ev { created_at: string; visitor: string; session: string; type: string; path: string | null; target: string | null; referrer: string | null; source: string | null; device: string | null; browser: string | null; tz: string | null }
+interface Ev { created_at: string; visitor: string; session: string; type: string; path: string | null; target: string | null; referrer: string | null; source: string | null; device: string | null; browser: string | null; tz: string | null; country_code?: string | null; country?: string | null; region?: string | null; city?: string | null; lat?: number | null; lon?: number | null }
 
-const COLS = 'created_at,visitor,session,type,path,target,referrer,source,device,browser,tz'
+const BASE_COLS = 'created_at,visitor,session,type,path,target,referrer,source,device,browser,tz'
+const COLS = `${BASE_COLS},country_code,country,region,city,lat,lon`
 const PAGE = 1000
 const CAP = 30000
 const RANGES = [{ days: 7, label: '7 days' }, { days: 30, label: '30 days' }, { days: 90, label: '90 days' }]
@@ -22,19 +23,23 @@ const count = <T,>(items: T[], key: (i: T) => string | null | undefined) => {
 const distinct = (items: Ev[], key: 'visitor' | 'session') => new Set(items.map((e) => e[key])).size
 
 /** Pulls every event in the range (the API returns 1000 rows at a time). */
-async function load(days: number): Promise<Ev[]> {
+async function load(days: number, cols = COLS): Promise<Ev[]> {
   const since = new Date(Date.now() - days * 86_400_000).toISOString()
   const out: Ev[] = []
   for (let from = 0; from < CAP; from += PAGE) {
-    const { data, error } = await getClient().from('events').select(COLS).gte('created_at', since).order('created_at', { ascending: true }).range(from, from + PAGE - 1)
-    if (error) throw error
-    out.push(...(data as Ev[]))
+    const { data, error } = await getClient().from('events').select(cols).gte('created_at', since).order('created_at', { ascending: true }).range(from, from + PAGE - 1)
+    if (error) {
+      // the location columns are added by supabase/geo.sql; until it has been run, show everything else
+      if (cols === COLS && /column|country|city|lat|lon/i.test(error.message)) return load(days, BASE_COLS)
+      throw error
+    }
+    out.push(...(data as unknown as Ev[]))
     if ((data?.length ?? 0) < PAGE) break
   }
   return out
 }
 
-/** Anonymous visitor analytics: no IP addresses or cookies, one random id per browser and one per visit. */
+/** Visitor analytics: no cookies, no IP addresses stored; one random id per browser and one per visit, plus the place each visit came from. */
 export function AnalyticsPanel({ site }: { site: SiteContent }) {
   const [days, setDays] = useState(30)
   const [events, setEvents] = useState<Ev[] | null>(null)
@@ -96,8 +101,10 @@ export function AnalyticsPanel({ site }: { site: SiteContent }) {
       sections: SECTIONS.map(([id, label]) => [label, reached(id)] as [string, number]),
       referrers: count(visits, (e) => e.referrer || 'Direct / unknown'),
       tags: count(visits, (e) => e.source),
-      countries: count(visits, (e) => countryOf(e.tz)),
-      cities: count(visits, (e) => cityOf(e.tz)),
+      countries: count(visits, (e) => placeOf(e).country),
+      cities: count(visits, (e) => placeOf(e).city),
+      realPlaces: visits.filter((e) => e.country_code).length,
+      recent: [...visits].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 12),
       devices: count(visits, (e) => e.device), browsers: count(visits, (e) => e.browser),
       outbound: count(events.filter((e) => e.type === 'outbound'), (e) => e.target),
       resume: events.filter((e) => e.type === 'resume_download').length,
@@ -163,8 +170,9 @@ export function AnalyticsPanel({ site }: { site: SiteContent }) {
             <Card title="What visitors do"><Bars rows={s.funnel} total={s.sessions} percent /></Card>
             <Card title="Where visitors come from"><Bars rows={s.referrers} total={s.sessions} percent /></Card>
             <Card title="Tagged links" hint="Add ?ref=companyname to a link you send, e.g. yoursite.com/?ref=acme."><Bars rows={s.tags} total={s.sessions} empty="No tagged visits yet." /></Card>
-            <Card title="Countries" hint="Estimated from each visitor’s device timezone. No IP addresses are collected."><Bars rows={s.countries} total={s.sessions} percent /></Card>
+            <Card title="Countries" hint={s.realPlaces ? PLACE_HINT : NO_PLACE_HINT}><Bars rows={s.countries} total={s.sessions} percent /></Card>
             <Card title="Cities"><Bars rows={s.cities} total={s.sessions} percent /></Card>
+            <div className="lg:col-span-2"><Card title="Recent visits" hint="The latest visits, newest first: where they were, what they opened first and what they used."><RecentVisits rows={s.recent} /></Card></div>
             <Card title="Pages"><Bars rows={s.pages.map(([path, n]) => [path.startsWith('/work/') ? `Case study: ${titleOf(path.slice(6))}` : path === '/' ? 'Home' : path, n] as [string, number])} total={s.views} /></Card>
             <Card title="Links clicked that leave the site"><Bars rows={s.outbound} total={s.outbound.reduce((a, [, n]) => a + n, 0)} empty="No outbound clicks yet." /></Card>
             <Card title="Devices"><Bars rows={s.devices} total={s.sessions} percent /></Card>
@@ -172,6 +180,39 @@ export function AnalyticsPanel({ site }: { site: SiteContent }) {
           </div>
         </>
       )}
+    </div>
+  )
+}
+
+const PLACE_HINT = 'Looked up from each visitor’s IP address when they visit. Only the place is stored, never the address. It is where their internet provider is, so a VPN or a mobile network can show a nearby city. Visits from before this was added use a timezone guess.'
+const NO_PLACE_HINT = 'Estimated from each visitor’s device timezone. To record real locations, run supabase/geo.sql once in Supabase → SQL Editor.'
+
+function RecentVisits({ rows }: { rows: Ev[] }) {
+  if (!rows.length) return <Empty />
+  const when = (iso: string) => new Date(iso).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[34rem] text-left text-sm">
+        <thead className="text-xs text-muted-foreground"><tr><th className="py-2 pr-3 font-normal">When</th><th className="px-3 font-normal">From</th><th className="px-3 font-normal">Opened</th><th className="px-3 font-normal">Device</th><th className="pl-3 font-normal">Came from</th></tr></thead>
+        <tbody className="divide-y divide-border">
+          {rows.map((e) => {
+            const p = placeOf(e)
+            return (
+              <tr key={`${e.session}-${e.created_at}`}>
+                <td className="whitespace-nowrap py-2.5 pr-3 text-muted-foreground">{when(e.created_at)}</td>
+                <td className="px-3">
+                  {p.city ?? p.country}
+                  {p.real && e.lat != null && e.lon != null && <a className="ml-2 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground" href={`https://www.google.com/maps?q=${e.lat},${e.lon}`} target="_blank" rel="noreferrer noopener">map</a>}
+                  {!p.real && <span className="ml-2 text-xs text-muted-foreground">(estimate)</span>}
+                </td>
+                <td className="px-3">{e.path === '/' ? 'Home' : e.path ?? '—'}</td>
+                <td className="px-3 text-muted-foreground">{[e.device, e.browser].filter(Boolean).join(' · ')}</td>
+                <td className="pl-3 text-muted-foreground">{e.source || e.referrer || 'Direct'}</td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
     </div>
   )
 }

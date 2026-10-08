@@ -33,7 +33,7 @@ export const sections: SectionDef[] = [
     group('availability', 'Availability', [{ kind: 'select', key: 'status', label: 'Status', options: ['open', 'limited', 'closed'] }, t('label', 'Label'), t('note', 'Extra note (optional)')]),
   ] },
   { id: 'theme', label: 'Colours', group: 'Site', key: 'portfolio', fields: [
-    group('theme', 'Theme', [{ kind: 'color', key: 'accent', label: 'Primary colour', hint: 'Used for highlights, buttons, links and the rotating hero word across the whole site.' }]),
+    group('theme', 'Theme', [{ kind: 'select', key: 'mode', label: 'Site mode (dark = warm charcoal, light = white and black; visitors cannot switch it)', options: ['dark', 'light'], labels: { dark: 'Dark', light: 'Light' } }, { kind: 'color', key: 'accent', label: 'Primary colour', hint: 'Leave on Default for black (light mode) or white (dark mode). Headings, buttons and links use it, and the quieter half of two-part headings uses a lighter version of it.' }]),
   ] },
   { id: 'hero', label: 'Hero', group: 'Site', key: 'portfolio', fields: [
     group('hero', 'Hero section', [
@@ -61,7 +61,7 @@ export const sections: SectionDef[] = [
       t('title', 'Title'), { kind: 'select', key: 'kind', label: 'Type', options: ['mobile', 'web'], labels: { mobile: 'Mobile application', web: 'Web application' } },
       t('slug', 'URL slug', 'Used in the address: /work/<slug>. Lowercase, no spaces.'), t('category', 'Short category line'), t('role', 'Your role'),
       ta('summary', 'Description', 4), strs('tech', 'Technologies'),
-      { kind: 'image', key: 'cover', label: 'Banner / cover image', hint: 'Wide image (about 2:1).' },
+      { kind: 'image', key: 'cover', label: 'Banner / cover image', hint: 'Cover image, 1048 × 764 px (about 4:3, the size of the TennisPreneur cover).' },
       group('stores', 'Store links (mobile apps)', [url('appStore', 'App Store link'), url('playStore', 'Google Play link')]),
       url('liveUrl', 'Live site (web applications)', 'Shown as the “Visit live site” button.'), url('repoUrl', 'Source code (web applications, optional)'),
       list('links', 'Other links', 'label', [t('label', 'Label'), url('href', 'Link')]),
@@ -95,7 +95,7 @@ export const sections: SectionDef[] = [
     list('items', 'Articles', 'title', [
       t('title', 'Title'), t('slug', 'URL slug', 'Used in the address: /blog/<slug>. Lowercase, no spaces.'),
       t('date', 'Date', 'Format: 2026-03-14'), ta('excerpt', 'Short summary', 2), strs('tags', 'Tags'),
-      { kind: 'image', key: 'cover', label: 'Cover image (optional)', hint: 'Wide image, about 2:1.' },
+      { kind: 'image', key: 'cover', label: 'Cover image (optional)', hint: 'Cover image, 1048 × 764 px (about 4:3).' },
       url('mediumUrl', 'Original Medium article', 'Shown as “Read on Medium”. If you add no content blocks below, the article simply links to Medium.'),
       { kind: 'list', key: 'blocks', label: 'Content blocks', titleFrom: (b) => `${String(b.type)} — ${String(b.text || b.caption || b.video || b.src || '').replace(/\s+/g, ' ').slice(0, 56)}`, hint: 'Build the article block by block, top to bottom.', fields: [
         { kind: 'select', key: 'type', label: 'Block type', options: ['paragraph', 'heading', 'subheading', 'list', 'quote', 'code', 'image', 'youtube'], labels: { paragraph: 'Paragraph', heading: 'Heading', subheading: 'Sub-heading', list: 'Bullet list (one line per bullet)', quote: 'Quote', code: 'Code block', image: 'Image', youtube: 'YouTube video' } },
@@ -122,7 +122,7 @@ export const sections: SectionDef[] = [
 export function blankOf(fields: Field[]): Record<string, unknown> {
   const o: Record<string, unknown> = {}
   for (const f of fields) {
-    o[f.key] = f.kind === 'number' ? 0 : f.kind === 'color' ? '#ff5b2e' : f.kind === 'boolean' ? true : f.kind === 'strings' || f.kind === 'images' || f.kind === 'list' ? [] : f.kind === 'group' ? blankOf(f.fields) : f.kind === 'select' ? f.options[0] : ''
+    o[f.key] = f.kind === 'number' ? 0 : f.kind === 'color' ? '' : f.kind === 'boolean' ? true : f.kind === 'strings' || f.kind === 'images' || f.kind === 'list' ? [] : f.kind === 'group' ? blankOf(f.fields) : f.kind === 'select' ? f.options[0] : ''
   }
   return o
 }

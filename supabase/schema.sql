@@ -51,7 +51,7 @@ create policy "storage: admin write" on storage.objects for all to authenticated
   with check (bucket_id = 'portfolio' and (auth.jwt() ->> 'email') = 'you@example.com');
 
 -- ───────────────────────── events (anonymous visitor analytics) ─────────────────────────
--- No IP addresses, no cookies: a random id per browser and one per visit. Anyone may add rows; only the admin can read or delete them.
+-- No IP addresses stored, no cookies: a random id per browser and one per visit. Anyone may add rows; only the admin can read or delete them.
 create table if not exists public.events (
   id         bigint generated always as identity primary key,
   created_at timestamptz not null default now(),
@@ -64,7 +64,14 @@ create table if not exists public.events (
   source     text check (char_length(source)   <= 100),
   device     text check (char_length(device)   <= 20),
   browser    text check (char_length(browser)  <= 30),
-  tz         text check (char_length(tz)       <= 60)
+  tz         text check (char_length(tz)       <= 60),
+  -- city-level location looked up from the visitor's IP at visit time; only the place is stored, never the address
+  country_code text check (char_length(country_code) = 2),
+  country    text check (char_length(country) <= 60),
+  region     text check (char_length(region)  <= 80),
+  city       text check (char_length(city)    <= 80),
+  lat        numeric(6,2),
+  lon        numeric(6,2)
 );
 create index if not exists events_created_at_idx on public.events (created_at desc);
 alter table public.events enable row level security;

@@ -79,8 +79,8 @@ export default function ProjectPage() {
             {/* The cover is a supporting visual, not the star: small card, the work is in the text below. */}
             <div className="md:col-span-5">
               {web
-                ? <BrowserFrame url={hostOf(p.liveUrl)}><div className="aspect-[16/10] overflow-hidden"><ProjectCover project={p} className="h-full w-full" /></div></BrowserFrame>
-                : <div className="aspect-[2/1] overflow-hidden rounded-lg border border-border"><ProjectCover project={p} className="h-full w-full" /></div>}
+                ? <BrowserFrame url={hostOf(p.liveUrl)}><div className="aspect-[1048/764] overflow-hidden"><ProjectCover project={p} className="h-full w-full" /></div></BrowserFrame>
+                : <div className="aspect-[1048/764] overflow-hidden rounded-lg border border-border"><ProjectCover project={p} className="h-full w-full" /></div>}
             </div>
           </div>
         </header>

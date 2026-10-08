@@ -6,6 +6,7 @@ import { useFinePointer, usePrefersReducedMotion } from '@/hooks/useMediaQuery'
  * Elements declare cursor behaviour with data attributes — no prop drilling:
  *   data-cursor="hover|view|drag|link"  data-cursor-label="EXPLORE"
  *   data-cursor-system   → inside this element the normal system cursor (hand) is used instead (e.g. the puzzle).
+ *   data-cursor-text    → treat this element's text as headline text (the large lens).
  * Over headline text the cursor becomes a large inverting lens, so only the covered letters change colour.
  */
 type Variant = 'default' | 'text' | 'hover' | 'view' | 'drag' | 'link' | 'system'
@@ -33,7 +34,7 @@ export function Cursor() {
       if (t?.closest('[data-cursor-system]')) return setState((s) => (s.variant === 'system' ? s : { variant: 'system', label: '' }))
       const el = t?.closest<HTMLElement>('[data-cursor], a, button, input, textarea, select, label')
       if (!el) {
-        const isText = !!t?.closest('h1, h2, h3, blockquote, .t-display')
+        const isText = !!t?.closest('h1, h2, h3, blockquote, .t-display, .t-sans-display, [data-cursor-text]')
         return setState((s) => (s.variant === (isText ? 'text' : 'default') ? s : { variant: isText ? 'text' : 'default', label: '' }))
       }
       const v = (el.dataset.cursor as Variant | undefined) ?? (el.matches('input, textarea, select') ? 'default' : 'hover')
@@ -60,7 +61,7 @@ export function Cursor() {
   return (
     <motion.div aria-hidden className={`pointer-events-none fixed left-0 top-0 z-[100] transition-opacity duration-200 ${state.variant === 'system' ? 'opacity-0' : ''} ${filled ? '' : 'mix-blend-difference'}`} style={{ x: sx, y: sy }}>
       <motion.div
-        className={`flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-[0.72rem] font-medium ${filled ? 'bg-accent text-accent-foreground' : 'bg-white'}`}
+        className={`flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-[0.72rem] font-medium ${filled ? 'bg-foreground text-background' : 'bg-white'}`}
         animate={{ width: d, height: d }}
         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
       >

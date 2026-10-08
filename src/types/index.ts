@@ -27,8 +27,8 @@ export interface Portfolio {
   contact: { kicker: string; headline: string; emphasis: string; text: string; successMessage: string; emailEndpoint?: string }
   footer: { legal: string }
   seo: SeoConfig
-  /** Site-wide primary colour (hex). Applied as the --accent design token. */
-  theme?: { accent: string }
+  /** Site-wide primary colour (hex) and colour mode. Applied as design tokens; only the dashboard changes the mode. */
+  theme?: { accent: string; mode?: 'dark' | 'light' }
 }
 
 export interface NavItem { label: string; to: string; section?: string; icon?: 'lamp'; hideOnBar?: boolean }

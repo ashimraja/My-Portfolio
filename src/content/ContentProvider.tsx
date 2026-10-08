@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from 'react'
 import { SUPABASE_URL, cloudEnabled, restHeaders } from '@/lib/cloud'
-import { applyAccent } from '@/lib/theme'
+import { applyAccent, applyMode } from '@/lib/theme'
 import type { SiteContent } from '@/types'
 import { defaultContent } from './defaults'
 import { mergeDeep } from './merge'
@@ -30,6 +30,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
 
   // The primary colour is a design token: set it before paint so there is no colour flash.
   useLayoutEffect(() => { applyAccent(content.portfolio.theme?.accent) }, [content.portfolio.theme?.accent])
+  useLayoutEffect(() => { applyMode(content.portfolio.theme?.mode) }, [content.portfolio.theme?.mode])
 
   useEffect(() => {
     if (!cloudEnabled) return
@@ -51,7 +52,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!initials) return
     const size = initials.length > 2 ? 11 : initials.length > 1 ? 14 : 18
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#1b1a18"/><text x="15" y="16" text-anchor="middle" dominant-baseline="central" fill="#f0ebe0" font-family="Helvetica,Arial,sans-serif" font-size="${size}" font-weight="700">${initials.replace(/[<>&]/g, '')}</text><circle cx="28" cy="23" r="1.6" fill="#ff5b2e"/></svg>`
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#1b1a18"/><text x="15" y="16" text-anchor="middle" dominant-baseline="central" fill="#f0ebe0" font-family="Helvetica,Arial,sans-serif" font-size="${size}" font-weight="700">${initials.replace(/[<>&]/g, '')}</text></svg>`
     const link = document.head.querySelector<HTMLLinkElement>('link[rel="icon"]')
     if (link) { link.type = 'image/svg+xml'; link.href = `data:image/svg+xml,${encodeURIComponent(svg)}` }
   }, [initials])

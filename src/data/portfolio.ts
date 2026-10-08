@@ -70,7 +70,7 @@ export const portfolio: Portfolio = {
 
   footer: { legal: '© 2026 MD Ashim Raja' },
 
-  theme: { accent: '#ff5b2e' },
+  theme: { accent: '', mode: 'dark' },
 
   seo: {
     siteUrl: 'https://md-ashim-raja.vercel.app',

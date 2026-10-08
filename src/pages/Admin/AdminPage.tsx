@@ -101,7 +101,7 @@ function Dashboard({ email }: { email: string }) {
   const [saved, setSaved] = useState<Record<string, string>>({})
   const [inCloud, setInCloud] = useState<Set<string>>(new Set())
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading')
-  const [active, setActive] = useState('profile')
+  const [active, setActive] = useState('analytics') // the dashboard opens on how the site is doing
   const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null)
   const [unread, setUnread] = useState(0)
   const [busy, setBusy] = useState(false)
@@ -179,6 +179,8 @@ function Dashboard({ email }: { email: string }) {
             <ChevronDown size={18} aria-hidden className={`transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
           </button>
           <div id="admin-menu" className={`${menuOpen ? 'mt-3 block' : 'hidden'} space-y-5 rounded-xl border border-border bg-surface/40 p-3 md:mt-0 md:block md:border-0 md:bg-transparent md:p-0`}>
+            <div><p className="mb-1.5 px-3 text-xs text-muted-foreground">Overview</p>
+              <button onClick={() => pick('analytics')} className={`flex w-full items-center rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${active === 'analytics' ? 'bg-accent text-accent-foreground' : 'hover:bg-surface'}`}>Analytics</button></div>
             {Object.entries(grouped).map(([g, items]) => (
               <div key={g}><p className="mb-1.5 px-3 text-xs text-muted-foreground">{g}</p>
                 {items.map((s) => (
@@ -190,7 +192,6 @@ function Dashboard({ email }: { email: string }) {
             ))}
             <div><p className="mb-1.5 px-3 text-xs text-muted-foreground">Tools</p>
               <button onClick={() => pick('resume')} className={`flex w-full items-center rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${active === 'resume' ? 'bg-accent text-accent-foreground' : 'hover:bg-surface'}`}>Resume builder</button>
-              <button onClick={() => pick('analytics')} className={`flex w-full items-center rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${active === 'analytics' ? 'bg-accent text-accent-foreground' : 'hover:bg-surface'}`}>Analytics</button>
               <button onClick={() => pick('templates')} className={`flex w-full items-center rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${active === 'templates' ? 'bg-accent text-accent-foreground' : 'hover:bg-surface'}`}>Cover letters</button></div>
             <div><p className="mb-1.5 px-3 text-xs text-muted-foreground">Inbox</p>
               <button onClick={() => pick('messages')} className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${active === 'messages' ? 'bg-accent text-accent-foreground' : 'hover:bg-surface'}`}>

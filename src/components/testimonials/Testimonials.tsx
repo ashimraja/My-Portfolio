@@ -1,61 +1,65 @@
-import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
-import { useState } from 'react'
+import { motion, useScroll, useTransform, type MotionValue } from 'framer-motion'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { useContent } from '@/content/ContentProvider'
-import { ease } from '@/lib/animations'
 import type { Testimonial } from '@/types'
+
+const clamp = (v: number) => Math.min(1, Math.max(0, v))
+const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
 
 export function Testimonials() {
   const items = useContent().content.testimonials.items
-  return items.length ? <TestimonialSlider testimonials={items} /> : null
+  return items.length ? <TestimonialStack testimonials={items} /> : null
 }
 
-function TestimonialSlider({ testimonials }: { testimonials: Testimonial[] }) {
-  const [[i, dir], setState] = useState<[number, number]>([0, 1])
-  const t = testimonials[i]
-  const go = (d: number) => setState(([n]) => [(n + d + testimonials.length) % testimonials.length, d])
-  const mx = useSpring(useMotionValue(0), { stiffness: 80, damping: 20 })
-  const quoteX = useTransform(mx, [-1, 1], [-24, 24])
-  const markX = useTransform(mx, [-1, 1], [30, -30])
-  const onMove = (e: React.PointerEvent<HTMLDivElement>) => { const r = e.currentTarget.getBoundingClientRect(); mx.set(((e.clientX - r.left) / r.width) * 2 - 1) }
+function QuoteCard({ t, i, n, p, dx, cardRef }: { t: Testimonial; i: number; n: number; p: MotionValue<number>; dx: number; cardRef: (el: HTMLElement | null) => void }) {
+  const mid = (n - 1) / 2
+  const k = useTransform(p, (v) => easeInOut(clamp((v - i * 0.05) / (1 - (n - 1) * 0.05))))
+  const x = useTransform(k, (v) => dx * (1 - v))
+  const y = useTransform(k, (v) => (1 - v) * (i - mid) * 10)
+  const rotate = useTransform(k, (v) => (1 - v) * (i - mid) * 5)
+  const scale = useTransform(k, (v) => 0.94 + 0.06 * v)
+  return (
+    <motion.figure ref={cardRef} style={{ x, y, rotate, scale, zIndex: n - i }}
+      className="flex w-[82vw] shrink-0 snap-center flex-col justify-between gap-10 rounded-xl border border-border bg-surface p-7 shadow-[0_24px_60px_-28px_rgba(0,0,0,0.55)] sm:w-[26rem] sm:p-9">
+      <blockquote className="text-[1.15rem] font-medium leading-snug tracking-tight sm:text-[1.3rem]"><span aria-hidden className="t-display mr-1 text-accent">“</span>{t.quote}</blockquote>
+      <figcaption className="flex items-center gap-4">
+        <span aria-hidden className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-border bg-background font-mono text-sm">{t.initials}</span>
+        <span><span className="block font-medium">{t.name}</span><span className="t-label">{t.role} · {t.company}</span></span>
+      </figcaption>
+    </motion.figure>
+  )
+}
+
+/** Quotes start piled up in the middle of the row and spread out side by side as the section scrolls into view; the row scrolls sideways when it overflows. */
+function TestimonialStack({ testimonials }: { testimonials: Testimonial[] }) {
+  const n = testimonials.length
+  const row = useRef<HTMLDivElement>(null)
+  const cards = useRef<(HTMLElement | null)[]>([])
+  const [dxs, setDxs] = useState<number[]>([])
+  const { scrollYProgress } = useScroll({ target: row, offset: ['start 95%', 'start 35%'] })
+
+  const measure = useCallback(() => {
+    const r = row.current
+    if (!r) return
+    const centre = r.clientWidth / 2 // the pile sits in the middle of what is visible, i.e. the row at scrollLeft 0
+    setDxs(cards.current.slice(0, n).map((el) => (el ? centre - (el.offsetLeft + el.offsetWidth / 2) : 0)))
+  }, [n])
+  useLayoutEffect(() => { measure() }, [measure])
+  useEffect(() => {
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [measure])
 
   return (
-    <section id="testimonials" className="section rule overflow-hidden" aria-labelledby="t-h" onKeyDown={(e) => { if (e.key === 'ArrowRight') go(1); if (e.key === 'ArrowLeft') go(-1) }}>
+    <section id="testimonials" className="section rule overflow-hidden" aria-labelledby="t-h">
       <div className="container-x">
         <SectionHeading index="08" kicker="Kind words" title="What people say." />
         <span id="t-h" className="sr-only">Testimonials</span>
-        <div className="relative mt-14 md:mt-20" onPointerMove={onMove}>
-          <motion.span aria-hidden style={{ x: markX }} className="t-display pointer-events-none absolute -top-10 left-0 select-none text-[22rem] leading-none text-accent/15 md:-top-24 md:text-[36rem]">“</motion.span>
-          <div className="relative min-h-[22rem] md:min-h-[26rem]" aria-live="polite">
-            <AnimatePresence mode="wait" custom={dir} initial={false}>
-              <motion.figure key={i} custom={dir} style={{ x: quoteX }}
-                variants={{ enter: (d: number) => ({ opacity: 0, x: 80 * d }), center: { opacity: 1, x: 0 }, exit: (d: number) => ({ opacity: 0, x: -80 * d }) }}
-                initial="enter" animate="center" exit="exit" transition={{ duration: 0.55, ease }}>
-                <blockquote className="max-w-4xl text-[clamp(1.5rem,2.8vw,2.4rem)] font-medium leading-snug tracking-tight">{t.quote}</blockquote>
-                <figcaption className="mt-10 flex items-center gap-4">
-                  <span aria-hidden className="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-surface font-mono text-sm">{t.initials}</span>
-                  <span><span className="block font-medium">{t.name}</span><span className="t-label">{t.role} · {t.company}</span></span>
-                </figcaption>
-              </motion.figure>
-            </AnimatePresence>
-          </div>
-          <div className="mt-10 flex items-center justify-between border-t border-border pt-6">
-            <div className="flex gap-2" role="group" aria-label="Choose testimonial">
-              {testimonials.map((x, n) => (
-                <button key={x.name} onClick={() => setState([n, n > i ? 1 : -1])} aria-label={`Show testimonial from ${x.name}`} aria-current={n === i} className="group py-3" data-cursor="hover">
-                  <span className={`block h-[3px] rounded transition-all duration-500 ${n === i ? 'w-12 bg-accent' : 'w-6 bg-border group-hover:bg-muted-foreground'}`} />
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              {[[-1, ArrowLeft, 'Previous testimonial'], [1, ArrowRight, 'Next testimonial']].map(([d, Icon, label]) => {
-                const I = Icon as typeof ArrowLeft
-                return <button key={label as string} onClick={() => go(d as number)} aria-label={label as string} className="flex h-12 w-12 items-center justify-center rounded-full border border-border transition-colors hover:border-accent hover:text-accent" data-cursor="hover"><I size={18} /></button>
-              })}
-            </div>
-          </div>
-        </div>
+      </div>
+      <div ref={row} className="mt-14 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden flex snap-x gap-5 overflow-x-auto px-[var(--gutter)] py-10 md:mt-20 md:gap-8" style={{ scrollPaddingInline: 'var(--gutter)' }}>
+        {testimonials.map((t, i) => <QuoteCard key={t.name} t={t} i={i} n={n} p={scrollYProgress} dx={dxs[i] ?? 0} cardRef={(el) => { cards.current[i] = el }} />)}
+        <div aria-hidden className="w-px shrink-0" />
       </div>
     </section>
   )

@@ -16,9 +16,17 @@ export function onColor(hex: string) {
   return ratio(l, luminance(dark)) >= ratio(l, 1) ? dark : '#ffffff'
 }
 
+/** Dark (default) or light mode. Set as a data attribute so the token overrides in index.css apply; After Hours keeps its own night palette. */
+export function applyMode(mode?: string) {
+  const root = document.documentElement
+  if (mode === 'light') root.dataset.mode = 'light'
+  else delete root.dataset.mode
+}
+
 /** Sets the site's primary (accent) colour. Invalid values are ignored so a typo can never break the page. */
 export function applyAccent(hex?: string) {
   const root = document.documentElement
+  // Empty (or invalid) means "default": the text colour itself.
   if (!hex || !HEX.test(hex)) { root.style.removeProperty('--accent'); root.style.removeProperty('--accent-foreground'); return }
   root.style.setProperty('--accent', expand(hex))
   root.style.setProperty('--accent-foreground', onColor(hex))

@@ -1,35 +1,26 @@
-import { motion, useScroll, useTransform } from 'framer-motion'
-import { useRef } from 'react'
+import { motion } from 'framer-motion'
 import { HeroHeadline } from './HeroHeadline'
 import { usePortfolio } from '@/content/ContentProvider'
 import { Availability } from './Availability'
-import { DotField } from './DotField'
 import { RoleTicker } from './RoleTicker'
 import { useIntroDone } from '@/lib/intro'
 
-export function Hero() {
+/** The hero's text block; shared by the standalone hero and the desktop hero-to-work stage. */
+export function HeroCopy() {
   const { hero, title, location } = usePortfolio()
-  const ref = useRef<HTMLElement>(null)
   const introDone = useIntroDone()
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
-  const y = useTransform(scrollYProgress, [0, 1], [0, 120])
-  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
-
   return (
-    <section id="top" ref={ref} aria-label="Introduction" className="relative flex min-h-[100svh] flex-col justify-end overflow-hidden pb-10 pt-32 sm:pb-14">
-      <DotField />
-      <motion.div style={{ y, opacity }} className="container-x relative w-full">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: introDone ? 1 : 0 }} transition={{ delay: 0.2 }} className="mb-8 sm:mb-12"><Availability /></motion.div>
-        <h1 className="sr-only">{`${hero.greeting} ${hero.headline.prefix} ${hero.headline.words.join(', ')} ${hero.headline.lines.join(' ')}`}</h1>
-        <p aria-hidden className="t-lead mb-4 !text-accent">{hero.greeting}</p>
-        <HeroHeadline headline={hero.headline} />
-        <div className="mt-10 border-t border-border pt-6 sm:mt-14">
-          <div className="space-y-3">
-            <RoleTicker roles={hero.roles} />
-            <p className="t-label">{title} · {location}</p>
-          </div>
+    <>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: introDone ? 1 : 0 }} transition={{ delay: 0.2 }} className="mb-8 sm:mb-12"><Availability /></motion.div>
+      <h1 className="sr-only">{`${hero.greeting} ${hero.headline.prefix} ${hero.headline.words.join(', ')} ${hero.headline.lines.join(' ')}`}</h1>
+      <p aria-hidden data-cursor-text className="t-lead mb-4 !text-foreground/55">{hero.greeting}</p>
+      <HeroHeadline headline={hero.headline} />
+      <div className="mt-10 border-t border-border pt-6 sm:mt-14">
+        <div className="space-y-3">
+          <RoleTicker roles={hero.roles} />
+          <p className="t-label">{title} · {location}</p>
         </div>
-      </motion.div>
-    </section>
+      </div>
+    </>
   )
 }

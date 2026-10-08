@@ -28,18 +28,20 @@ function RowTools({ i, n, onMove, onRemove, onCopy }: { i: number; n: number; on
   )
 }
 
-const SWATCHES = ['#ff5b2e', '#ff2d6f', '#ff9f1c', '#e6c200', '#3ddc84', '#00c2a8', '#2f80ff', '#7c5cff', '#c77dff']
+const SWATCHES = ['#ff2d6f', '#ff9f1c', '#e6c200', '#3ddc84', '#00c2a8', '#2f80ff', '#7c5cff', '#c77dff']
 
 function ColorField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const valid = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value)
+  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value)
+  const valid = value === '' || hex
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-3">
-        <input type="color" aria-label="Pick a colour" value={valid && value.length === 7 ? value : '#ff5b2e'} onChange={(e) => onChange(e.target.value)} className="h-11 w-14 cursor-pointer rounded-lg border border-border bg-background p-1" />
-        <input className={`${inputCls} max-w-[9rem] font-mono`} value={value} onChange={(e) => onChange(e.target.value)} placeholder="#ff5b2e" spellCheck={false} />
-        {!valid && <span className="text-xs text-red-400">Use a hex colour like #ff5b2e</span>}
+        <input type="color" aria-label="Pick a colour" value={hex && value.length === 7 ? value : '#000000'} onChange={(e) => onChange(e.target.value)} className="h-11 w-14 cursor-pointer rounded-lg border border-border bg-background p-1" />
+        <input className={`${inputCls} max-w-[9rem] font-mono`} value={value} onChange={(e) => onChange(e.target.value)} placeholder="Default" spellCheck={false} />
+        {!valid && <span className="text-xs text-red-400">Use a hex colour like #2f80ff, or clear it for the default</span>}
       </div>
       <div className="flex flex-wrap gap-2">
+        <button type="button" onClick={() => onChange('')} className={`rounded-full border px-3 text-xs ${value === '' ? 'border-foreground' : 'border-border text-muted-foreground'}`}>Default</button>
         {SWATCHES.map((c) => <button key={c} type="button" onClick={() => onChange(c)} aria-label={`Use ${c}`} className="h-8 w-8 rounded-full border border-border transition-transform hover:scale-110" style={{ background: c, outline: c.toLowerCase() === value.toLowerCase() ? '2px solid var(--foreground)' : 'none', outlineOffset: 2 }} />)}
       </div>
     </div>
