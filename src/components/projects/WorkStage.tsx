@@ -47,12 +47,12 @@ function FanCard({ p, i, n, f, stag, pose, cardRef }: { p: Project; i: number; n
   const opacity = useTransform(t, (v) => (i < FAN.length ? 1 : clamp(v * 3))) // covers beyond the fan wait behind it and fade in as they leave
   const caption = useTransform(t, (v) => clamp((v - 0.55) / 0.45))
   return (
-    <motion.div ref={cardRef} style={{ x, y, rotate, scale, opacity, zIndex: n - i, transformOrigin: `50% ${pose.oy}px`, width: 'var(--card-w)' }} className="pointer-events-auto shrink-0">
+    <motion.div ref={cardRef} style={{ x, y, rotate, scale, opacity, zIndex: n - i, transformOrigin: `50% ${pose.oy}px`, width: 'var(--card-w)' }} className="pointer-events-auto shrink-0 will-change-transform [backface-visibility:hidden]">
       <Link to={`/work/${p.slug}`} data-track="project_click" data-target={p.slug} data-cursor="view" data-cursor-label="VIEW" aria-label={`${p.title} — ${p.category}. Open case study`}
         className="group flex w-full flex-col gap-6">
         <div data-cover className="relative aspect-[1048/764] w-full overflow-hidden rounded-3xl border-[1.5px] border-foreground/20 bg-background shadow-[0_4px_14px_-8px_rgba(0,0,0,0.3)]">
           <ProjectCover project={p} className="h-full w-full transition-transform duration-[1200ms] ease-out group-hover:scale-105" />
-          <motion.span style={{ opacity: caption }} className="absolute left-4 top-4 font-mono text-xs text-white/80 mix-blend-difference">{idx(i)} / {idx(n - 1)}</motion.span>
+          <motion.span style={{ opacity: caption }} className="absolute left-4 top-4 font-mono text-xs text-white/90 [text-shadow:0_1px_4px_rgba(0,0,0,0.65)]">{idx(i)} / {idx(n - 1)}</motion.span>
         </div>
         <motion.div style={{ opacity: caption }}><ProjectCaption p={p} stacked /></motion.div>
       </Link>
@@ -73,6 +73,7 @@ function WorkStageInner({ all, intro }: { all: Project[]; intro: { kicker: strin
   const track = useRef<HTMLDivElement>(null)
   const end = useRef<HTMLDivElement>(null)
   const pin = useRef<HTMLDivElement>(null)
+  const heroEl = useRef<HTMLDivElement>(null)
   const cards = useRef<(HTMLDivElement | null)[]>([])
   const [dist, setDist] = useState(0)
   const [vh, setVh] = useState(() => window.innerHeight)
@@ -95,8 +96,17 @@ function WorkStageInner({ all, intro }: { all: Project[]; intro: { kicker: strin
   const measure = useCallback(() => {
     const tr = track.current, tail = end.current
     if (!tr || !tail) return
-    const w = window.innerWidth, h = window.innerHeight, L = FAN_LAYOUT[compact ? 'compact' : 'wide']
+    // The pinned box is 100svh, so it stays put when a phone's address bar slides away; window.innerHeight would change mid-scroll and re-lay-out the whole stage.
+    const w = window.innerWidth, h = pin.current?.offsetHeight || window.innerHeight, L = FAN_LAYOUT[compact ? 'compact' : 'wide']
     setVh(h)
+    // On narrow screens the fan sits below the hero copy: fit it into the space that is left instead of a fixed spot that can land on the text.
+    const hero = heroEl.current
+    let top = 0, bottom = 0
+    if (compact && hero && hero.offsetHeight) {
+      const k = hero.getBoundingClientRect().height / hero.offsetHeight
+      top = hero.offsetTop + hero.offsetHeight * k + 16
+      bottom = h - 20
+    }
     setDist(Math.max(0, tail.offsetLeft + tail.offsetWidth - w)) // from the layout, not scrollWidth: the fanned covers' transforms would inflate that
     setPoses(cards.current.slice(0, n).map((el, k) => {
       const cover = el?.querySelector<HTMLElement>('[data-cover]')
@@ -104,7 +114,13 @@ function WorkStageInner({ all, intro }: { all: Project[]; intro: { kicker: strin
       const fan = FAN[Math.min(k, FAN.length - 1)]
       const natX = el.offsetLeft + el.offsetWidth / 2
       const natY = tr.offsetTop + el.offsetTop + cover.offsetHeight / 2
-      return { dx: w * L.anchor.x + fan.x * el.offsetWidth * L.scale - natX, dy: h * L.anchor.y + fan.y * cover.offsetHeight * L.scale - natY, r: fan.r, oy: cover.offsetHeight / 2, s: L.scale }
+      const ch = cover.offsetHeight
+      let s = L.scale, ay = h * L.anchor.y
+      if (bottom > top) {
+        s = Math.max(0.3, Math.min(L.scale, (bottom - top) / (2.1 * ch)))
+        ay = (top + bottom) / 2 - 0.05 * ch * s
+      }
+      return { dx: w * L.anchor.x + fan.x * el.offsetWidth * s - natX, dy: ay + fan.y * ch * s - natY, r: fan.r, oy: ch / 2, s }
     }))
   }, [n, compact])
 
@@ -112,6 +128,7 @@ function WorkStageInner({ all, intro }: { all: Project[]; intro: { kicker: strin
   useEffect(() => {
     const ro = new ResizeObserver(measure)
     if (track.current) ro.observe(track.current)
+    if (heroEl.current) ro.observe(heroEl.current)
     window.addEventListener('resize', measure)
     return () => { ro.disconnect(); window.removeEventListener('resize', measure) }
   }, [measure])
@@ -123,7 +140,7 @@ function WorkStageInner({ all, intro }: { all: Project[]; intro: { kicker: strin
     const scrollBy = (dy: number) => {
       const w = wrap.current
       if (!w) return
-      const top = w.getBoundingClientRect().top + window.scrollY, max = w.offsetHeight - window.innerHeight
+      const top = w.getBoundingClientRect().top + window.scrollY, max = w.offsetHeight - (pin.current?.offsetHeight ?? window.innerHeight) // the pinned box is 100svh; innerHeight is taller once a phone's address bar hides, which stopped the swipe short of the last card
       window.scrollTo(0, Math.min(top + max, Math.max(top, window.scrollY + dy)))
     }
     const down = (e: PointerEvent) => { if (e.pointerType === 'mouse') return; cancelAnimationFrame(raf); id = e.pointerId; sx = lx = e.clientX; sy = e.clientY; lt = e.timeStamp; vel = 0; moved = false; mode = 'idle' }
@@ -163,7 +180,7 @@ function WorkStageInner({ all, intro }: { all: Project[]; intro: { kicker: strin
     <section id="top" ref={wrap} aria-label="Introduction and selected work" style={{ height: range + vh }} className="relative">
       <span id="work" aria-hidden className="pointer-events-none absolute left-0 h-px w-px" style={{ top: fly }} />
       <div ref={pin} className="sticky top-0 h-[100svh] touch-pan-y overflow-hidden" style={{ ['--card-w' as string]: `min(${compact ? '84vw' : '46vw'}, 56rem, ${Math.max(0, vh - 25 * 16) * 1.3717}px)` }}>
-        <motion.div style={{ opacity: heroOpacity, y: heroY, pointerEvents: heroEvents }} className="container-x absolute inset-x-0 top-0 origin-top-left pt-28 md:top-auto md:bottom-0 md:origin-bottom-left md:pb-14 md:pt-32 [@media(max-height:780px)]:scale-90 [@media(max-height:680px)]:scale-[0.78]"><HeroCopy /></motion.div>
+        <motion.div ref={heroEl} style={{ opacity: heroOpacity, y: heroY, pointerEvents: heroEvents }} className="container-x absolute inset-x-0 top-0 origin-top-left pt-28 md:top-auto md:bottom-0 md:origin-bottom-left md:pb-14 md:pt-32 [@media(max-height:780px)]:scale-90 [@media(max-height:680px)]:scale-[0.78]"><HeroCopy /></motion.div>
 
         <motion.header style={{ opacity: barOpacity }} className="container-x pointer-events-none absolute inset-x-0 top-24 flex flex-col gap-1 md:flex-row md:items-baseline md:gap-6">
           <p className="t-label flex items-center gap-3"><span className="text-accent">01</span><span aria-hidden className="h-px w-10 bg-border" />{intro.kicker}</p>
@@ -173,7 +190,7 @@ function WorkStageInner({ all, intro }: { all: Project[]; intro: { kicker: strin
         <motion.div ref={track} initial={{ opacity: 0 }} animate={{ opacity: introDone ? 1 : 0 }} transition={{ delay: 0.4, duration: 0.8 }}
           style={{ x }} className="pointer-events-none absolute inset-x-0 bottom-24 top-44 flex items-center gap-8 pl-[var(--gutter)] md:gap-16 will-change-transform">
           {projects.map((p, i) => <FanCard key={p.slug} p={p} i={i} n={n} f={f} stag={stag} pose={poses[i] ?? NO_POSE} cardRef={(el) => { cards.current[i] = el }} />)}
-          <div ref={end} aria-hidden className="h-px w-[8vw] shrink-0" />
+          <div ref={end} aria-hidden className="h-px w-[14vw] shrink-0 md:w-[8vw]" />
         </motion.div>
 
         <motion.div style={{ opacity: barOpacity }} className="container-x absolute inset-x-0 bottom-0 flex items-center gap-6 pb-8">

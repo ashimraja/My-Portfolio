@@ -51,33 +51,30 @@ export function AboutPhoto() {
     const r = box.current!.getBoundingClientRect()
     return { x: e.clientX - r.left, y: e.clientY - r.top, nx: (e.clientX - r.left) / r.width - 0.5, ny: (e.clientY - r.top) / r.height - 0.5 }
   }
-  const onMove = (e: React.PointerEvent) => { if (reduce) return; const p = locate(e); px.set(p.nx); py.set(p.ny) }
-  const onEnter = () => { if (!reduce) { window.clearTimeout(litTimer.current); setLit(true) } }
-  const onLeave = () => { px.set(0); py.set(0); litTimer.current = window.setTimeout(() => setLit(false), 250) }
+  const onMove = (e: React.PointerEvent) => { if (reduce || e.pointerType !== 'mouse') return; const p = locate(e); px.set(p.nx); py.set(p.ny) }
+  const onEnter = (e: React.PointerEvent) => { if (!reduce && e.pointerType === 'mouse') { window.clearTimeout(litTimer.current); setLit(true) } }
+  const onLeave = (e: React.PointerEvent) => { if (e.pointerType !== 'mouse') return; px.set(0); py.set(0); litTimer.current = window.setTimeout(() => setLit(false), 250) }
   const onDown = (e: React.PointerEvent) => {
     if (reduce) return
     const p = locate(e)
-    px.set(p.nx); py.set(p.ny)
-    setLit(true)
-    void bounce.start({ scale: [1, 0.93, 1.045, 1], transition: { duration: 0.55, ease: 'easeOut' } })
-    const burst: Spark[] = Array.from({ length: 9 }, (_, i) => {
-      const a = (i / 9) * Math.PI * 2 + Math.random() * 0.5, d = 46 + Math.random() * 54
+    if (e.pointerType === 'mouse') { px.set(p.nx); py.set(p.ny); setLit(true) } // a finger gets the bounce and sparks only: no 3D tilt or colour repaint on a phone
+    void bounce.start({ scale: [1, 0.95, 1.03, 1], transition: { duration: 0.5, ease: 'easeOut' } })
+    const burst: Spark[] = Array.from({ length: e.pointerType === 'mouse' ? 9 : 6 }, (_, i) => {
+      const a = (i / (e.pointerType === 'mouse' ? 9 : 6)) * Math.PI * 2 + Math.random() * 0.5, d = 46 + Math.random() * 54
       return { id: ++sparkId, x: p.x, y: p.y, dx: Math.cos(a) * d, dy: Math.sin(a) * d, size: 4 + Math.random() * 5 }
     })
     setSparks((s) => [...s, ...burst])
     window.setTimeout(() => setSparks((s) => s.filter((k) => !burst.includes(k))), 800)
-    // a finger has no “leave”: fade the colour back and settle the tilt a moment after the tap
-    if (e.pointerType !== 'mouse') { window.clearTimeout(litTimer.current); litTimer.current = window.setTimeout(() => { setLit(false); px.set(0); py.set(0) }, 1400) }
   }
 
   const picture = about.photo
-    ? <img src={about.photo} alt={`Portrait of ${name}`} loading="lazy" decoding="async" draggable={false} className={`block h-auto w-full select-none transition-[filter] duration-700 ${lit ? 'saturate-[1.12]' : 'saturate-[0.78]'}`} />
+    ? <img src={about.photo} alt={`Portrait of ${name}`} loading="lazy" decoding="async" draggable={false} className={`block h-auto w-full select-none [@media(hover:hover)]:transition-[filter] [@media(hover:hover)]:duration-700 ${lit ? 'saturate-[1.12]' : 'saturate-[0.78]'}`} />
     : <div aria-hidden className="flex aspect-[4/5] w-full items-center justify-center bg-surface"><span className="t-display text-[7rem] leading-none text-foreground/80">{initials}<span className="text-accent">.</span></span></div>
 
   return (
     <Reveal variant="scale" className="mx-auto mb-16 mt-10 max-w-[19rem] md:mt-14 md:max-w-[22rem]">
-      <div ref={box} className="relative touch-pan-y" style={{ perspective: 900 }} onPointerEnter={onEnter} onPointerMove={onMove} onPointerLeave={onLeave} onPointerCancel={onLeave} onPointerDown={onDown} onPointerUp={(e) => { if (e.pointerType !== 'mouse') { px.set(0); py.set(0) } }}>
-        <motion.div animate={bounce} style={{ rotateX: reduce ? 0 : rotateX, rotateY: reduce ? 0 : rotateY, transformStyle: 'preserve-3d' }} className="relative z-10 overflow-hidden rounded-xl will-change-transform">
+      <div ref={box} className="relative touch-pan-y" style={{ perspective: reduce ? undefined : 900 }} onPointerEnter={onEnter} onPointerMove={onMove} onPointerLeave={onLeave} onPointerCancel={onLeave} onPointerDown={onDown} >
+        <motion.div animate={bounce} style={{ rotateX: reduce ? 0 : rotateX, rotateY: reduce ? 0 : rotateY, }} className="relative z-10 overflow-hidden rounded-xl will-change-transform [backface-visibility:hidden]">
           {picture}
         </motion.div>
         {facts.map(([label, value], i) => <FloatCard key={label} p={scrollYProgress} i={i} label={label} value={value} />)}

@@ -27,9 +27,9 @@ export function HeroHeadline({ headline }: { headline: Portfolio['hero']['headli
         <RevealText immediate delay={0.2} lines={headline.prefix} className="font-sans text-[clamp(1.1rem,2.4vw,2.2rem)] font-light" />
       </div>
 
-      <div className="relative mt-2 h-[1.12em] overflow-hidden pr-4 t-hero-main leading-[1.12] -mb-[0.1em]">
+      <div className="relative mt-2 h-[1.3em] overflow-hidden pr-4 t-hero-main leading-[1.12] -mb-[0.2em]">
         <AnimatePresence mode="popLayout" initial={false}>
-          <motion.span key={i} style={{ fontWeight: 400 }} className="t-display absolute t-dim bg-clip-text pr-[0.12em] text-transparent left-0 top-0 whitespace-nowrap leading-[1.12]"
+          <motion.span key={i} style={{ fontWeight: 400 }} className="t-display absolute t-dim bg-clip-text pb-[0.2em] pr-[0.12em] text-transparent left-0 top-0 whitespace-nowrap leading-[1.12]"
             initial={{ y: '105%', rotate: 3 }} animate={{ y: introDone || i > 0 ? '0%' : '105%', rotate: 0 }} exit={{ y: '-105%', rotate: -3 }} transition={{ duration: 0.9, ease }}>
             {headline.words[i]}
           </motion.span>

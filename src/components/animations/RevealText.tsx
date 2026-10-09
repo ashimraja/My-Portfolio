@@ -35,7 +35,7 @@ export function RevealText({ lines, as = 'div', className, delay = 0, gap = 0.06
           {parseEmphasis(line).map((seg, si) =>
             seg.text.split(' ').filter(Boolean).map((w, wi) => (
               <Fragment key={`${si}-${wi}`}>
-                <span className="inline-block overflow-hidden align-bottom pb-[0.08em] -mb-[0.08em]">
+                <span className="inline-block overflow-hidden align-bottom pb-[0.22em] -mb-[0.22em] pr-[0.1em] -mr-[0.1em] pl-[0.04em] -ml-[0.04em]">
                   <motion.span variants={maskWord} className={`inline-block will-change-transform ${quiet(li, seg.em) ? 'font-normal text-accent/45' : accented ? 'text-accent' : ''}`}>{w}</motion.span>
                 </span>{' '}
               </Fragment>
