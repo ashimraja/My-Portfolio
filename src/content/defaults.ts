@@ -5,6 +5,7 @@ import { experience, experienceIntro } from '@/data/experience'
 import { navigation, navCta } from '@/data/navigation'
 import { portfolio } from '@/data/portfolio'
 import { projects, projectsIntro } from '@/data/projects'
+import { research } from '@/data/research'
 import { stack, stackIntro } from '@/data/skills'
 import { testimonials } from '@/data/testimonials'
 import type { SiteContent } from '@/types'
@@ -22,6 +23,7 @@ export const defaultContent: SiteContent = {
   testimonials: { items: testimonials },
   afterHours,
   blog,
+  research,
   navigation: { items: navigation, cta: navCta },
 }
 

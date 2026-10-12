@@ -15,6 +15,8 @@ const ProjectPage = lazy(() => import('@/pages/Project/ProjectPage'))
 const AfterHours = lazy(() => import('@/pages/AfterHours/AfterHours'))
 const BlogIndex = lazy(() => import('@/pages/Blog/BlogIndexPage'))
 const BlogPost = lazy(() => import('@/pages/Blog/BlogPostPage'))
+const ResearchIndex = lazy(() => import('@/pages/Research/ResearchIndexPage'))
+const ResearchPaperPage = lazy(() => import('@/pages/Research/ResearchPaperPage'))
 const Admin = lazy(() => import('@/pages/Admin/AdminPage'))
 
 export default function App() {
@@ -37,6 +39,8 @@ export default function App() {
               <Route path="/work/:slug" element={<main id="main"><ProjectPage /></main>} />
               <Route path="/blog" element={<BlogIndex />} />
               <Route path="/blog/:slug" element={<main id="main"><BlogPost /></main>} />
+              <Route path="/research" element={<ResearchIndex />} />
+              <Route path="/research/:slug" element={<main id="main"><ResearchPaperPage /></main>} />
               <Route path="/after-hours" element={<AfterHours />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<Home />} />

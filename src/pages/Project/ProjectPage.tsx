@@ -90,7 +90,7 @@ export default function ProjectPage() {
         </div>
 
         <Link to={`/work/${next.slug}`} className="group relative block overflow-hidden border-t border-border py-20 md:py-32" data-cursor="view" data-cursor-label="NEXT">
-          <div className="container-x"><p className="t-label mb-4">Next case study</p>
+          <div className="container-x"><p className="t-label mb-4">Next project</p>
             <p className="t-display t-hero transition-transform duration-700 group-hover:translate-x-4">{next.title}</p></div>
         </Link>
       </article>

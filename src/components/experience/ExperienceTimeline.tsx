@@ -6,6 +6,10 @@ import { ease } from '@/lib/animations'
 import { useIsDesktop } from '@/hooks/useMediaQuery'
 
 export function ExperienceTimeline() {
+  return useContent().content.experience.items.length ? <ExperienceTimelineInner /> : null // all roles hidden: no empty section
+}
+
+function ExperienceTimelineInner() {
   const { items: experience, intro: experienceIntro } = useContent().content.experience
   const [active, setActive] = useState(0)
   const desktop = useIsDesktop()

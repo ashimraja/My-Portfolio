@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, ChevronDown, Copy, Plus, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, ChevronDown, Copy, Eye, EyeOff, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import type { Screenshot } from '@/types'
 import { ImageField } from './ImageField'
@@ -16,12 +16,13 @@ function move<T>(arr: T[], i: number, d: number) {
   return out
 }
 
-function RowTools({ i, n, onMove, onRemove, onCopy }: { i: number; n: number; onMove: (d: number) => void; onRemove: () => void; onCopy?: () => void }) {
+function RowTools({ i, n, onMove, onRemove, onCopy, hidden, onToggleHide }: { i: number; n: number; onMove: (d: number) => void; onRemove: () => void; onCopy?: () => void; hidden?: boolean; onToggleHide?: () => void }) {
   const b = 'rounded-md p-1.5 text-muted-foreground transition-colors hover:text-accent disabled:opacity-30'
   return (
     <div className="flex shrink-0 items-center">
       <button type="button" className={b} disabled={i === 0} onClick={() => onMove(-1)} aria-label="Move up"><ArrowUp size={15} /></button>
       <button type="button" className={b} disabled={i === n - 1} onClick={() => onMove(1)} aria-label="Move down"><ArrowDown size={15} /></button>
+      {onToggleHide && <button type="button" className={`${b} ${hidden ? '!text-accent' : ''}`} onClick={onToggleHide} aria-pressed={hidden} aria-label={hidden ? 'Show on the site' : 'Hide from the site'} title={hidden ? 'Hidden from the site — click to show' : 'Hide from the site (keeps the data)'}>{hidden ? <EyeOff size={15} /> : <Eye size={15} />}</button>}
       {onCopy && <button type="button" className={b} onClick={onCopy} aria-label="Duplicate"><Copy size={15} /></button>}
       <button type="button" className={`${b} hover:!text-red-400`} onClick={onRemove} aria-label="Remove"><Trash2 size={15} /></button>
     </div>
@@ -84,27 +85,46 @@ function ImageList({ value, onChange }: { value: Screenshot[]; onChange: (v: Scr
 
 function ObjectList({ f, value, onChange }: { f: Extract<Field, { kind: 'list' }>; value: Obj[]; onChange: (v: Obj[]) => void }) {
   const [open, setOpen] = useState<number | null>(value.length === 1 ? 0 : null)
+  const titleOf = (item: Obj, i: number) => (f.titleFrom?.(item).trim()) || (f.titleKey && String(item[f.titleKey] ?? '').trim()) || `${f.label} ${i + 1}`
+  // Hidden items live in their own group below, so it is always clear what visitors can see. Indexes stay those of the saved array.
+  const shown = value.map((_, i) => i).filter((i) => !value[i].hidden)
+  const hid = value.map((_, i) => i).filter((i) => value[i].hidden)
+  const swap = (i: number, group: number[], d: number) => { // move within the item's own group: swap with its neighbour there
+    const at = group.indexOf(i), j = group[at + d]
+    if (j === undefined) return
+    const out = value.slice();[out[i], out[j]] = [out[j], out[i]]
+    onChange(out)
+    if (open === i) setOpen(j)
+  }
+  const row = (i: number, group: number[]) => {
+    const item = value[i], title = titleOf(item, i), isOpen = open === i, at = group.indexOf(i)
+    return (
+      <div key={i} className="rounded-lg border border-border bg-surface/50">
+        <div className="flex items-center gap-1 pr-2">
+          <button type="button" onClick={() => setOpen(isOpen ? null : i)} aria-expanded={isOpen} className="flex min-w-0 flex-1 items-center gap-2 px-3 py-3 text-left">
+            <ChevronDown size={16} className={`shrink-0 text-muted-foreground transition-transform ${isOpen ? '' : '-rotate-90'}`} />
+            <span className={`truncate text-sm font-medium ${item.hidden ? 'text-muted-foreground' : ''}`}>{title}</span>
+          </button>
+          <RowTools i={at} n={group.length} hidden={Boolean(item.hidden)} onToggleHide={f.hideable ? () => onChange(value.map((x, k) => (k === i ? { ...x, hidden: !x.hidden } : x))) : undefined}
+            onMove={(d) => swap(i, group, d)}
+            onCopy={() => { onChange([...value.slice(0, i + 1), structuredClone(item), ...value.slice(i + 1)]); setOpen(null) }}
+            onRemove={() => { if (confirm(`Remove “${title}” for good? To keep it but not show it, use the eye button instead.`)) { onChange(value.filter((_, k) => k !== i)); setOpen(null) } }} />
+        </div>
+        {isOpen && <div className="border-t border-border p-4"><Editor fields={f.fields} value={item} onChange={(v) => onChange(value.map((x, k) => (k === i ? v : x)))} /></div>}
+      </div>
+    )
+  }
   return (
     <div className="space-y-2">
-      {value.map((item, i) => {
-        const title = (f.titleFrom?.(item).trim()) || (f.titleKey && String(item[f.titleKey] ?? '').trim()) || `${f.label} ${i + 1}`
-        const isOpen = open === i
-        return (
-          <div key={i} className="rounded-lg border border-border bg-surface/50">
-            <div className="flex items-center gap-1 pr-2">
-              <button type="button" onClick={() => setOpen(isOpen ? null : i)} aria-expanded={isOpen} className="flex min-w-0 flex-1 items-center gap-2 px-3 py-3 text-left">
-                <ChevronDown size={16} className={`shrink-0 text-muted-foreground transition-transform ${isOpen ? '' : '-rotate-90'}`} />
-                <span className="truncate text-sm font-medium">{title}</span>
-              </button>
-              <RowTools i={i} n={value.length} onMove={(d) => { onChange(move(value, i, d)); if (isOpen) setOpen(i + d) }}
-                onCopy={() => onChange([...value.slice(0, i + 1), structuredClone(item), ...value.slice(i + 1)])}
-                onRemove={() => { if (confirm(`Remove “${title}”?`)) { onChange(value.filter((_, k) => k !== i)); setOpen(null) } }} />
-            </div>
-            {isOpen && <div className="border-t border-border p-4"><Editor fields={f.fields} value={item} onChange={(v) => onChange(value.map((x, k) => (k === i ? v : x)))} /></div>}
-          </div>
-        )
-      })}
+      {f.hideable && hid.length > 0 && <p className="t-label !text-[0.7rem] pt-1">On the site · {shown.length}</p>}
+      {shown.map((i) => row(i, shown))}
       <button type="button" className={btnCls} onClick={() => { onChange([...value, blankOf(f.fields)]); setOpen(value.length) }}><Plus size={14} /> Add {f.label.toLowerCase().replace(/s$/, '')}</button>
+      {hid.length > 0 && (
+        <div className="mt-5 space-y-2 rounded-lg border border-dashed border-border p-3">
+          <p className="t-label !text-[0.7rem] flex items-center gap-2"><EyeOff size={13} aria-hidden /> Hidden from the site · {hid.length} <span className="normal-case tracking-normal opacity-70">(kept, not deleted — click the eye to show again)</span></p>
+          {hid.map((i) => row(i, hid))}
+        </div>
+      )}
     </div>
   )
 }

@@ -12,11 +12,23 @@ const CACHE_KEY = 'site-content-v1'
 const readCache = (): Partial<SiteContent> | null => {
   try { const raw = localStorage.getItem(CACHE_KEY); return raw ? JSON.parse(raw) : null } catch { return null }
 }
+/** Items switched off with the dashboard's eye button stay saved but never reach the site. */
+const shown = <T extends { hidden?: boolean }>(items: T[]) => items.filter((i) => !i.hidden)
+const withoutHidden = (c: SiteContent): SiteContent => ({
+  ...c,
+  projects: { ...c.projects, items: shown(c.projects.items) },
+  blog: { ...c.blog, items: shown(c.blog.items) },
+  testimonials: { ...c.testimonials, items: shown(c.testimonials.items) },
+  research: { ...c.research, items: shown(c.research.items) },
+  experience: { ...c.experience, items: shown(c.experience.items) },
+  education: { ...c.education, items: shown(c.education.items) },
+  stack: { ...c.stack, categories: shown(c.stack.categories).map((cat) => ({ ...cat, items: shown(cat.items) })) },
+})
 const build = (remote: Partial<SiteContent> | null): SiteContent => {
   if (!remote) return defaultContent
   const out = { ...defaultContent }
   for (const k of Object.keys(defaultContent) as (keyof SiteContent)[]) if (remote[k] !== undefined) (out as Record<string, unknown>)[k] = mergeDeep(defaultContent[k], remote[k])
-  return out
+  return withoutHidden(out)
 }
 
 /**

@@ -11,14 +11,23 @@ export type Field =
   | { kind: 'strings'; key: string; label: string; multiline?: boolean; hint?: string }
   | { kind: 'images'; key: string; label: string; hint?: string }
   | { kind: 'group'; key: string; label: string; fields: Field[] }
-  | { kind: 'list'; key: string; label: string; titleKey?: string; titleFrom?: (item: Record<string, unknown>) => string; fields: Field[]; hint?: string }
+  | { kind: 'list'; key: string; label: string; hideable?: boolean; titleKey?: string; titleFrom?: (item: Record<string, unknown>) => string; fields: Field[]; hint?: string }
 
 const t = (key: string, label: string, hint?: string): Field => ({ kind: 'text', key, label, hint })
 const ta = (key: string, label: string, rows = 3, hint?: string): Field => ({ kind: 'textarea', key, label, rows, hint })
 const url = (key: string, label: string, hint?: string): Field => ({ kind: 'url', key, label, hint })
 const strs = (key: string, label: string, hint?: string, multiline = false): Field => ({ kind: 'strings', key, label, hint, multiline })
 const group = (key: string, label: string, fields: Field[]): Field => ({ kind: 'group', key, label, fields })
-const list = (key: string, label: string, titleKey: string | undefined, fields: Field[], hint?: string): Field => ({ kind: 'list', key, label, titleKey, fields, hint })
+const list = (key: string, label: string, titleKey: string | undefined, fields: Field[], hint?: string, hideable = false): Field => ({ kind: 'list', key, label, titleKey, fields, hint, hideable })
+
+const blocksField: Field = { kind: 'list', key: 'blocks', label: 'Content blocks', titleFrom: (b) => `${String(b.type)} — ${String(b.text || b.caption || b.video || b.src || '').replace(/\s+/g, ' ').slice(0, 56)}`, hint: 'Build the article block by block, top to bottom.', fields: [
+        { kind: 'select', key: 'type', label: 'Block type', options: ['paragraph', 'heading', 'subheading', 'list', 'quote', 'code', 'image', 'youtube'], labels: { paragraph: 'Paragraph', heading: 'Heading', subheading: 'Sub-heading', list: 'Bullet list (one line per bullet)', quote: 'Quote', code: 'Code block', image: 'Image', youtube: 'YouTube video' } },
+        ta('text', 'Text / code', 6, 'Paragraph, heading, list, quote or code. In paragraphs: **bold**, *italic*, `code` and [link text](https://…) work.'),
+        t('language', 'Code language (code blocks)', 'e.g. tsx, js, json, bash, css, swift, kotlin'),
+        { kind: 'image', key: 'src', label: 'Image (image blocks)' },
+        url('video', 'YouTube link (YouTube blocks)'),
+        t('caption', 'Caption (images, video) or file name (code)'),
+      ] }
 
 const intro = [t('kicker', 'Small label'), t('title', 'Title')]
 
@@ -73,22 +82,22 @@ export const sections: SectionDef[] = [
       strs('approach', 'Approach steps (optional)', undefined, true),
       list('architecture', 'Architecture layers (optional)', 'layer', [t('layer', 'Layer'), t('detail', 'Detail')]),
       group('visual', 'Fallback artwork (only used when there is no cover image)', [strs('colors', 'Three colours (hex)'), { kind: 'select', key: 'pattern', label: 'Pattern', options: ['rings', 'grid', 'waves', 'blocks'] }]),
-    ], 'Drag order with the arrows. The first project appears first on the site.'),
+    ], 'Drag order with the arrows. The first project appears first on the site.', true),
   ] },
   { id: 'experience', label: 'Experience', group: 'Content', key: 'experience', fields: [
     group('intro', 'Section heading', intro),
-    list('items', 'Roles', 'role', [t('role', 'Role'), t('company', 'Company'), t('period', 'Period (e.g. Sep 2025 — Present)'), t('start', 'Start (big year)'), t('end', 'End (big year or Now)'), t('location', 'Location (optional)'), ta('summary', 'Summary'), strs('achievements', 'Achievements', undefined, true), strs('tech', 'Technologies (optional)')]),
+    list('items', 'Roles', 'role', [t('role', 'Role'), t('company', 'Company'), t('period', 'Period (e.g. Sep 2025 — Present)'), t('start', 'Start (big year)'), t('end', 'End (big year or Now)'), t('location', 'Location (optional)'), ta('summary', 'Summary'), strs('achievements', 'Achievements', undefined, true), strs('tech', 'Technologies (optional)')], undefined, true),
   ] },
   { id: 'education', label: 'Education', group: 'Content', key: 'education', fields: [
     group('intro', 'Section heading', intro),
-    list('items', 'Schools', 'school', [t('school', 'School / university'), t('degree', 'Degree'), t('period', 'Period'), ta('notes', 'Notes', 2)]),
+    list('items', 'Schools', 'school', [t('school', 'School / university'), t('degree', 'Degree'), t('period', 'Period'), ta('notes', 'Notes', 2)], undefined, true),
   ] },
   { id: 'stack', label: 'Tech stack', group: 'Content', key: 'stack', fields: [
     group('intro', 'Section heading', intro),
-    list('categories', 'Categories', 'label', [t('id', 'ID (no spaces)'), t('label', 'Name'), t('blurb', 'One-line blurb'), list('items', 'Technologies', 'name', [t('name', 'Name'), t('note', 'Level / note')])]),
+    list('categories', 'Categories', 'label', [t('id', 'ID (no spaces)'), t('label', 'Name'), t('blurb', 'One-line blurb'), list('items', 'Technologies', 'name', [t('name', 'Name'), t('note', 'Level / note')], undefined, true)], undefined, true),
   ] },
   { id: 'testimonials', label: 'Testimonials', group: 'Content', key: 'testimonials', fields: [
-    list('items', 'Testimonials', 'name', [ta('quote', 'Quote', 3), t('name', 'Name'), t('role', 'Role'), t('company', 'Company'), t('initials', 'Initials')], 'The section stays hidden while this list is empty.'),
+    list('items', 'Testimonials', 'name', [ta('quote', 'Quote', 3), t('name', 'Name'), t('role', 'Role'), t('company', 'Company'), t('initials', 'Initials')], 'The section stays hidden while this list is empty.', true),
   ] },
   { id: 'blog', label: 'Blog', group: 'Content', key: 'blog', fields: [
     group('intro', 'Section heading', intro),
@@ -97,15 +106,20 @@ export const sections: SectionDef[] = [
       t('date', 'Date', 'Format: 2026-03-14'), ta('excerpt', 'Short summary', 2), strs('tags', 'Tags'),
       { kind: 'image', key: 'cover', label: 'Cover image (optional)', hint: 'Cover image, 1048 × 764 px (about 4:3).' },
       url('mediumUrl', 'Original Medium article', 'Shown as “Read on Medium”. If you add no content blocks below, the article simply links to Medium.'),
-      { kind: 'list', key: 'blocks', label: 'Content blocks', titleFrom: (b) => `${String(b.type)} — ${String(b.text || b.caption || b.video || b.src || '').replace(/\s+/g, ' ').slice(0, 56)}`, hint: 'Build the article block by block, top to bottom.', fields: [
-        { kind: 'select', key: 'type', label: 'Block type', options: ['paragraph', 'heading', 'subheading', 'list', 'quote', 'code', 'image', 'youtube'], labels: { paragraph: 'Paragraph', heading: 'Heading', subheading: 'Sub-heading', list: 'Bullet list (one line per bullet)', quote: 'Quote', code: 'Code block', image: 'Image', youtube: 'YouTube video' } },
-        ta('text', 'Text / code', 6, 'Paragraph, heading, list, quote or code. In paragraphs: **bold**, *italic*, `code` and [link text](https://…) work.'),
-        t('language', 'Code language (code blocks)', 'e.g. tsx, js, json, bash, css, swift, kotlin'),
-        { kind: 'image', key: 'src', label: 'Image (image blocks)' },
-        url('video', 'YouTube link (YouTube blocks)'),
-        t('caption', 'Caption (images, video) or file name (code)'),
-      ] },
-    ], 'Newest posts are shown first, by date.'),
+      blocksField,
+    ], 'Newest posts are shown first, by date.', true),
+  ] },
+  { id: 'research', label: 'Research', group: 'Content', key: 'research', fields: [
+    group('intro', 'Page heading', intro),
+    list('items', 'Papers', 'title', [
+      t('title', 'Title'), { kind: 'select', key: 'status', label: 'Status', options: ['draft', 'published'], labels: { draft: 'Not published (only you can see it)', published: 'Published (visible on the Research page)' } },
+      t('slug', 'URL slug', 'Used in the address: /research/<slug>. Lowercase, no spaces.'),
+      strs('authors', 'Authors'), t('date', 'Date', 'Format: 2026-03-14'), ta('abstract', 'Abstract', 5), strs('tags', 'Tags'),
+      t('venue', 'Venue (optional)', 'Journal, conference or “Preprint”.'), t('doi', 'DOI (optional)', 'e.g. 10.1000/xyz123'),
+      url('pdfUrl', 'PDF link (optional)', 'Shown as “Read the PDF”.'), url('link', 'Other link (optional)', 'arXiv, publisher page…'),
+      { kind: 'image', key: 'cover', label: 'Cover image (optional)' },
+      blocksField,
+    ], 'The Research page appears in the menu only once at least one paper is published. Papers marked Not published stay hidden.', true),
   ] },
   { id: 'afterhours', label: 'After Hours', group: 'Content', key: 'afterHours', fields: [
     strs('headline', 'Big headline (3 lines)'), ta('text', 'Intro text'),

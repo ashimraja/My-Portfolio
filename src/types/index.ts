@@ -45,6 +45,8 @@ export type ProjectKind = 'mobile' | 'web'
 export type Screenshot = string | { src: string; caption?: string }
 
 export interface Project {
+  /** Set from the dashboard: kept, but not shown on the site. */
+  hidden?: boolean
   slug: string
   title: string
   /** Mobile app (store badges, phone screens) or web application (live site, source, browser screens). Defaults sensibly when omitted. */
@@ -79,6 +81,8 @@ export interface Project {
 }
 
 export interface Experience {
+  /** Set from the dashboard: kept, but not shown on the site. */
+  hidden?: boolean
   period: string
   start: string
   end: string
@@ -90,18 +94,20 @@ export interface Experience {
   tech?: string[]
 }
 
-export interface Education { school: string; degree: string; period: string; notes: string }
+export interface Education { hidden?: boolean; school: string; degree: string; period: string; notes: string }
 
 export interface SectionIntro { kicker: string; title: string }
 
-export interface StackCategory { id: string; label: string; blurb: string; items: { name: string; note: string }[] }
+export interface StackCategory { hidden?: boolean; id: string; label: string; blurb: string; items: { hidden?: boolean; name: string; note: string }[] }
 
-export interface Testimonial { quote: string; name: string; role: string; company: string; initials: string }
+export interface Testimonial { /** Set from the dashboard: kept, but not shown on the site. */ hidden?: boolean; quote: string; name: string; role: string; company: string; initials: string }
 
 export type BlogBlockType = 'paragraph' | 'heading' | 'subheading' | 'list' | 'quote' | 'code' | 'image' | 'youtube'
 /** One piece of an article. Which fields are used depends on `type` (text → text blocks and code; src → image; video → YouTube link). */
 export interface BlogBlock { type: BlogBlockType; text?: string; language?: string; src?: string; video?: string; caption?: string }
 export interface BlogPost {
+  /** Set from the dashboard: kept, but not shown on the site. */
+  hidden?: boolean
   slug: string
   title: string
   excerpt: string
@@ -114,6 +120,30 @@ export interface BlogPost {
   blocks: BlogBlock[]
 }
 export interface BlogContent { intro: SectionIntro; items: BlogPost[] }
+
+export type PaperStatus = 'draft' | 'published'
+/** A research paper. Only `published` papers are visible on the site; drafts stay in the dashboard. The body reuses the article blocks. */
+export interface ResearchPaper {
+  /** Set from the dashboard: kept, but not shown on the site even when published. */
+  hidden?: boolean
+  slug: string
+  title: string
+  abstract: string
+  authors: string[]
+  /** ISO date, e.g. 2026-03-14. */
+  date: string
+  tags: string[]
+  status: PaperStatus
+  /** Journal, conference or "Preprint" (optional). */
+  venue?: string
+  doi?: string
+  pdfUrl?: string
+  /** Any external page for the paper (arXiv, publisher…). */
+  link?: string
+  cover?: string
+  blocks: BlogBlock[]
+}
+export interface ResearchContent { intro: SectionIntro; items: ResearchPaper[] }
 
 export interface SideProject { kind?: ProjectKind; title: string; blurb: string; year: string; status: string; tech: string[]; href: string }
 
@@ -137,6 +167,7 @@ export interface SiteContent {
   testimonials: { items: Testimonial[] }
   afterHours: AfterHoursContent
   blog: BlogContent
+  research: ResearchContent
   navigation: { items: NavItem[]; cta: NavItem }
 }
 export type ContentKey = keyof SiteContent

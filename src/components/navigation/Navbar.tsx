@@ -13,8 +13,8 @@ import type { NavItem } from '@/types'
 
 /** Floating capsule, inset from the edges from the first frame. Gets a stronger glass fill once you scroll, tucks away while you scroll down and returns on the way up, and leans toward the pointer. */
 export function Navbar() {
-  const { portfolio, navigation: nav, blog } = useContent().content
-  const navigation = withDefaultLinks(nav.items, blog.items.length > 0), navCta = nav.cta
+  const { portfolio, navigation: nav, blog, research } = useContent().content
+  const navigation = withDefaultLinks(nav.items, blog.items.length > 0, research.items.some((p) => p.status === 'published')), navCta = nav.cta
   const { pathname } = useLocation()
   const go = useNavTarget()
   const fine = useFinePointer()

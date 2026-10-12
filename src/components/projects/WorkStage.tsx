@@ -48,7 +48,7 @@ function FanCard({ p, i, n, f, stag, pose, cardRef }: { p: Project; i: number; n
   const caption = useTransform(t, (v) => clamp((v - 0.55) / 0.45))
   return (
     <motion.div ref={cardRef} style={{ x, y, rotate, scale, opacity, zIndex: n - i, transformOrigin: `50% ${pose.oy}px`, width: 'var(--card-w)' }} className="pointer-events-auto shrink-0 will-change-transform [backface-visibility:hidden]">
-      <Link to={`/work/${p.slug}`} data-track="project_click" data-target={p.slug} data-cursor="view" data-cursor-label="VIEW" aria-label={`${p.title} — ${p.category}. Open case study`}
+      <Link to={`/work/${p.slug}`} data-track="project_click" data-target={p.slug} data-cursor="view" data-cursor-label="VIEW" aria-label={`${p.title} — ${p.category}. Open project`}
         className="group flex w-full flex-col gap-6">
         <div data-cover className="relative aspect-[1048/764] w-full overflow-hidden rounded-3xl border-[1.5px] border-foreground/20 bg-background shadow-[0_4px_14px_-8px_rgba(0,0,0,0.3)]">
           <ProjectCover project={p} className="h-full w-full transition-transform duration-[1200ms] ease-out group-hover:scale-105" />

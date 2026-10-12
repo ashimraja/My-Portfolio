@@ -3,8 +3,8 @@ import type { Project } from '@/types'
 export const projectsIntro = {
   kicker: 'Selected work',
   title: 'Six apps, shipped.',
-  hint: 'Scroll sideways · open a case study',
-  cta: 'Open case study',
+  hint: 'Scroll sideways · open a project',
+  cta: 'Open project',
 }
 
 /**

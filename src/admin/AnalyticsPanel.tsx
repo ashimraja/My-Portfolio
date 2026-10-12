@@ -112,7 +112,7 @@ export function AnalyticsPanel({ site }: { site: SiteContent }) {
       funnel: [
         ['Visited the site', sessions],
         ['Looked at projects', reached('work')],
-        ['Opened a case study', sessionsWhere((e) => e.type === 'pageview' && !!e.path?.startsWith('/work/'))],
+        ['Opened a project', sessionsWhere((e) => e.type === 'pageview' && !!e.path?.startsWith('/work/'))],
         ['Downloaded the resume', sessionsWhere((e) => e.type === 'resume_download')],
         ['Sent a message', sessionsWhere((e) => e.type === 'contact')],
       ] as [string, number][],
@@ -152,9 +152,9 @@ export function AnalyticsPanel({ site }: { site: SiteContent }) {
 
           <Card title="Visitors per day"><DayChart days={s.byDay} /></Card>
 
-          <Card title="Projects" hint="Clicks are taps on a project card on the home page. Opened is how many times its case study page was loaded.">
+          <Card title="Projects" hint="Clicks are taps on a project card on the home page. Opened is how many times its project page was loaded.">
             {s.projects.length === 0 ? <Empty /> : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto overscroll-x-contain" data-lenis-prevent>
                 <table className="w-full min-w-[30rem] text-left text-sm">
                   <thead className="text-xs text-muted-foreground"><tr><th className="py-2 pr-3 font-normal">Project</th><th className="px-3 font-normal">Card clicks</th><th className="px-3 font-normal">Opened</th><th className="px-3 font-normal">People</th><th className="pl-3 font-normal">Store clicks</th></tr></thead>
                   <tbody className="divide-y divide-border">
@@ -165,15 +165,15 @@ export function AnalyticsPanel({ site }: { site: SiteContent }) {
             )}
           </Card>
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card title="How far visitors scroll" hint="Share of visits that reached each section."><Bars rows={s.sections} total={s.sessions} percent /></Card>
             <Card title="What visitors do"><Bars rows={s.funnel} total={s.sessions} percent /></Card>
             <Card title="Where visitors come from"><Bars rows={s.referrers} total={s.sessions} percent /></Card>
             <Card title="Tagged links" hint="Add ?ref=companyname to a link you send, e.g. yoursite.com/?ref=acme."><Bars rows={s.tags} total={s.sessions} empty="No tagged visits yet." /></Card>
             <Card title="Countries" hint={s.realPlaces ? PLACE_HINT : NO_PLACE_HINT}><Bars rows={s.countries} total={s.sessions} percent /></Card>
             <Card title="Cities"><Bars rows={s.cities} total={s.sessions} percent /></Card>
-            <div className="lg:col-span-2"><Card title="Recent visits" hint="The latest visits, newest first: where they were, what they opened first and what they used."><RecentVisits rows={s.recent} /></Card></div>
-            <Card title="Pages"><Bars rows={s.pages.map(([path, n]) => [path.startsWith('/work/') ? `Case study: ${titleOf(path.slice(6))}` : path === '/' ? 'Home' : path, n] as [string, number])} total={s.views} /></Card>
+            <div className="min-w-0 lg:col-span-2"><Card title="Recent visits" hint="The latest visits, newest first: where they were, what they opened first and what they used."><RecentVisits rows={s.recent} /></Card></div>
+            <Card title="Pages"><Bars rows={s.pages.map(([path, n]) => [path.startsWith('/work/') ? `Project: ${titleOf(path.slice(6))}` : path === '/' ? 'Home' : path, n] as [string, number])} total={s.views} /></Card>
             <Card title="Links clicked that leave the site"><Bars rows={s.outbound} total={s.outbound.reduce((a, [, n]) => a + n, 0)} empty="No outbound clicks yet." /></Card>
             <Card title="Devices"><Bars rows={s.devices} total={s.sessions} percent /></Card>
             <Card title="Browsers"><Bars rows={s.browsers} total={s.sessions} percent /></Card>
@@ -191,7 +191,7 @@ function RecentVisits({ rows }: { rows: Ev[] }) {
   if (!rows.length) return <Empty />
   const when = (iso: string) => new Date(iso).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto overscroll-x-contain" data-lenis-prevent>
       <table className="w-full min-w-[34rem] text-left text-sm">
         <thead className="text-xs text-muted-foreground"><tr><th className="py-2 pr-3 font-normal">When</th><th className="px-3 font-normal">From</th><th className="px-3 font-normal">Opened</th><th className="px-3 font-normal">Device</th><th className="pl-3 font-normal">Came from</th></tr></thead>
         <tbody className="divide-y divide-border">
@@ -231,7 +231,7 @@ function Stat({ label, value, note }: { label: string; value: number; note?: str
 
 function Card({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-xl border border-border p-4 sm:p-5">
+    <section className="min-w-0 rounded-xl border border-border p-4 sm:p-5">
       <h2 className="font-medium">{title}</h2>
       {hint && <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>}
       <div className="mt-4">{children}</div>
@@ -254,18 +254,24 @@ function Bars({ rows, total, percent, empty }: { rows: [string, number][]; total
 }
 
 function DayChart({ days }: { days: [string, { views: number; visitors: Set<string> }][] }) {
+  const [picked, setPicked] = useState<string | null>(null) // tap a bar to read its numbers on a phone, where there is no hover
   const peak = Math.max(1, ...days.map(([, d]) => d.visitors.size))
   if (days.every(([, d]) => !d.views)) return <Empty />
+  const labelled = days.length <= 31 // beyond that the bars are too thin for a number on top of each
+  const sel = days.find(([day]) => day === picked)
   return (
     <div>
-      <div className="flex h-36 items-end gap-[3px]" role="img" aria-label="Visitors per day">
+      <div className={`flex h-36 items-end gap-[3px] ${labelled ? 'pt-4' : ''}`} role="img" aria-label="Visitors per day">
         {days.map(([day, d]) => (
-          <div key={day} className="group relative flex h-full flex-1 items-end" title={`${day}: ${d.visitors.size} visitors, ${d.views} page views`}>
-            <div className="w-full rounded-t bg-accent/80 transition-colors group-hover:bg-accent" style={{ height: `${(d.visitors.size / peak) * 100}%`, minHeight: d.visitors.size ? 3 : 1 }} />
-          </div>
+          <button type="button" key={day} onClick={() => setPicked(picked === day ? null : day)} aria-label={`${day}: ${d.visitors.size} visitors, ${d.views} page views`} title={`${day}: ${d.visitors.size} visitors, ${d.views} page views`}
+            className="group relative flex h-full flex-1 flex-col items-center justify-end">
+            {labelled && d.visitors.size > 0 && <span className={`mb-0.5 text-[0.6rem] leading-none tabular-nums ${picked === day ? 'text-foreground' : 'text-muted-foreground'}`}>{d.visitors.size}</span>}
+            <div className={`w-full rounded-t transition-colors ${picked === day ? 'bg-accent' : 'bg-accent/80 group-hover:bg-accent'}`} style={{ height: `${(d.visitors.size / peak) * (labelled ? 88 : 100)}%`, minHeight: d.visitors.size ? 3 : 1 }} />
+          </button>
         ))}
       </div>
       <div className="mt-2 flex justify-between text-xs text-muted-foreground"><span>{days[0][0]}</span><span>Most in a day: {peak}</span><span>{days[days.length - 1][0]}</span></div>
+      <p className="mt-2 min-h-[1.25rem] text-sm">{sel ? <><span className="font-medium">{sel[0]}</span> · {sel[1].visitors.size} visitors · {sel[1].views} page views</> : <span className="text-xs text-muted-foreground">Tap a bar to see that day’s numbers.</span>}</p>
     </div>
   )
 }

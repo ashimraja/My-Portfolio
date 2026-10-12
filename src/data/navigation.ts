@@ -21,7 +21,7 @@ export const homeSections = ['top', 'work', 'about', 'stack', 'experience', 'edu
  * Navigation saved in the dashboard predates newer pages. Make sure Resume is always linked, and Blog whenever there are articles,
  * placing them before the After Hours icon / hidden items so the bar keeps its order.
  */
-export function withDefaultLinks(items: NavItem[], hasBlog: boolean): NavItem[] {
+export function withDefaultLinks(items: NavItem[], hasBlog: boolean, hasResearch = false): NavItem[] {
   const out = [...items]
   const add = (item: NavItem, present: (i: NavItem) => boolean) => {
     if (out.some(present)) return
@@ -30,5 +30,6 @@ export function withDefaultLinks(items: NavItem[], hasBlog: boolean): NavItem[] 
   }
   add({ label: 'Resume', to: '/', section: 'resume' }, (i) => i.section === 'resume')
   if (hasBlog) add({ label: 'Blog', to: '/blog' }, (i) => i.to === '/blog' || i.to.startsWith('/blog/'))
+  if (hasResearch) add({ label: 'Research', to: '/research' }, (i) => i.to === '/research' || i.to.startsWith('/research/'))
   return out
 }

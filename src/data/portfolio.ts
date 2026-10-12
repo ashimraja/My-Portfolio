@@ -56,7 +56,7 @@ export const portfolio: Portfolio = {
     { value: 5, suffix: '+', label: 'Production Apps Shipped' },
     { value: 2, suffix: '', label: 'Stores — App Store & Play Store' },
     { value: 12, suffix: '', label: 'Core Technologies' },
-    { value: 6, suffix: '', label: 'Case Studies' },
+    { value: 6, suffix: '', label: 'Projects' },
   ],
 
   contact: {
