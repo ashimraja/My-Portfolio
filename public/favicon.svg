@@ -1,8 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="AR monogram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="A monogram">
   <rect width="32" height="32" rx="8" fill="#1b1a18"/>
-  <g fill="none" stroke="#f0ebe0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M5 23 L9.6 9 L14.2 23 M6.9 18.2 H12.3"/>
-    <path d="M17.6 23 V9 H21.6 a3.6 3.6 0 0 1 0 7.2 H17.6 M21.4 16.2 L25 23"/>
+  <g fill="none" stroke="#f0ebe0" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8.5 24 L14 8 L19.5 24 M10.4 18.4 H17.6"/>
   </g>
-  <circle cx="28" cy="23" r="1.6" fill="#ff5b2e"/>
+  <circle cx="24" cy="23" r="1.8" fill="#ff5b2e"/>
 </svg>

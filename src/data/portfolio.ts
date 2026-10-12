@@ -7,7 +7,7 @@ import type { Portfolio } from '@/types'
 export const portfolio: Portfolio = {
   name: 'MD Ashim Raja',
   firstName: 'Ashim',
-  initials: 'AR',
+  initials: 'A',
   title: 'React Native Developer',
   location: 'India',
   email: 'rajaasim652@gmail.com',
