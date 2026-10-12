@@ -11,7 +11,7 @@ export type Field =
   | { kind: 'strings'; key: string; label: string; multiline?: boolean; hint?: string }
   | { kind: 'images'; key: string; label: string; hint?: string }
   | { kind: 'group'; key: string; label: string; fields: Field[] }
-  | { kind: 'list'; key: string; label: string; hideable?: boolean; titleKey?: string; titleFrom?: (item: Record<string, unknown>) => string; fields: Field[]; hint?: string }
+  | { kind: 'list'; key: string; label: string; hideable?: boolean; hideKey?: 'hidden' | 'include'; titleKey?: string; titleFrom?: (item: Record<string, unknown>) => string; fields: Field[]; hint?: string }
 
 const t = (key: string, label: string, hint?: string): Field => ({ kind: 'text', key, label, hint })
 const ta = (key: string, label: string, rows = 3, hint?: string): Field => ({ kind: 'textarea', key, label, rows, hint })
@@ -53,7 +53,7 @@ export const sections: SectionDef[] = [
   ] },
   { id: 'about', label: 'About & stats', group: 'Site', key: 'portfolio', fields: [
     group('about', 'About', [{ kind: 'image', key: 'photo', label: 'Your photo', hint: 'A portrait (4:5 works best, at least 800px wide). It is shown beside your intro in the About section; upload a new one any time to replace it.' }, t('kicker', 'Small label'), strs('words', 'Big words (3)'), ta('intro', 'Intro sentence'), strs('paragraphs', 'Paragraphs', undefined, true), list('focus', 'Focus rows', 'label', [t('label', 'Label'), ta('text', 'Text', 2)]), group('game', 'Rubik’s cube', [t('hint', 'Screen-reader description')])]),
-    list('stats', 'Animated statistics', 'label', [{ kind: 'number', key: 'value', label: 'Number' }, t('suffix', 'After the number (e.g. +)'), t('label', 'Label')]),
+    list('stats', 'Animated statistics', 'label', [{ kind: 'select', key: 'source', label: 'Number comes from', options: ['', 'research', 'projects'], labels: { '': 'The number typed below', research: 'Published research papers (automatic)', projects: 'Number of projects (automatic)' } }, { kind: 'number', key: 'value', label: 'Number (when typed)' }, t('suffix', 'After the number (e.g. +)'), t('label', 'Label')]),
   ] },
   { id: 'contact', label: 'Contact & footer', group: 'Site', key: 'portfolio', fields: [
     group('contact', 'Contact section', [t('kicker', 'Small label'), t('headline', 'Small headline'), t('emphasis', 'Highlighted ending'), ta('text', 'Text'), url('emailEndpoint', 'Email form endpoint (Formspree URL)', 'Messages are emailed through this. Leave empty to only save them to the Messages inbox.'), t('successMessage', 'Message after sending')]),

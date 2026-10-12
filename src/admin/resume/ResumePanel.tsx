@@ -1,4 +1,4 @@
-import { Copy, Download, FilePlus2, Pencil, RefreshCw, Save, Trash2 } from 'lucide-react'
+import { Copy, Download, FilePlus2, Globe, Pencil, RefreshCw, Save, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Editor } from '@/admin/Editor'
@@ -62,6 +62,7 @@ export default function ResumePanel({ site, say }: { site: SiteContent; say: (t:
   const [tab, setTab] = useState('header')
   const [state, setState] = useState<'loading' | 'ready' | 'missing' | 'error'>('loading')
   const [busy, setBusy] = useState(false)
+  const [live, setLive] = useState<{ id: string; json: string } | null>(null) // the copy the website shows, if one is chosen
 
   const dirty = draft !== null && json({ n: name, d: draft }) !== savedJson
 
@@ -77,6 +78,9 @@ export default function ResumePanel({ site, say }: { site: SiteContent; say: (t:
       const list = (data as ResumeVersion[]).map((v) => ({ ...v, data: normalizeResume(v.data, site) }))
       setVersions(list)
       if (list.length) open(list[0]); else open({ id: newId(), name: 'Default', data: buildFromSite(site) }, false)
+      const { data: row } = await sb.from('content').select('value').eq('key', 'resume').maybeSingle()
+      const v = row?.value as { id?: string; data?: ResumeData | null } | undefined
+      setLive(v?.data ? { id: v.id ?? '', json: json(v.data) } : null)
       setState('ready')
     })()
     // load once; later site edits are pulled in explicitly with “Re-fill from website”
@@ -96,6 +100,21 @@ export default function ResumePanel({ site, say }: { site: SiteContent; say: (t:
     setSavedJson(json({ n: name, d: draft }))
     say('Resume saved.')
   }
+  // The resumes table is private, so “show on website” copies this resume into the public content table.
+  const publish = async (on: boolean) => {
+    if (!draft) return
+    if (on && dirty) await save()
+    setBusy(true)
+    const value = on ? { id: activeId, data: draft } : { id: '', data: null }
+    const { error } = await sb.from('content').upsert({ key: 'resume', value, updated_at: new Date().toISOString() })
+    setBusy(false)
+    if (error) return say(error.message, false)
+    setLive(on ? { id: activeId, json: json(draft) } : null)
+    try { localStorage.removeItem('site-content-v1') } catch { /* storage unavailable */ }
+    say(on ? 'This resume is now shown on your website.' : 'The website resume is built from your site content again.')
+  }
+  const isLive = live?.id === activeId
+  const liveStale = isLive && live.json !== json(draft)
   const create = (data: ResumeData, label: string) => {
     if (!confirmLeave()) return
     const n = prompt('Name this resume (e.g. “Company – Role”)', label)
@@ -151,6 +170,9 @@ export default function ResumePanel({ site, say }: { site: SiteContent; say: (t:
         <span className="ml-auto flex items-center gap-2">
           <span className="text-xs text-muted-foreground">{dirty ? 'Unsaved changes' : 'Saved'}</span>
           <button className={btnPrimary} disabled={busy || !dirty} onClick={save}><Save size={15} /> {busy ? 'Saving…' : 'Save'}</button>
+          {isLive
+            ? <button className={btnCls} disabled={busy} onClick={() => (liveStale ? publish(true) : publish(false))} title={liveStale ? 'Your edits are not on the website yet' : 'Go back to a resume built from your site content'}><Globe size={14} /> {liveStale ? 'Update on website' : 'On website · stop showing'}</button>
+            : <button className={btnCls} disabled={busy} onClick={() => publish(true)} title="Show this resume in the Resume section of the website"><Globe size={14} /> Show on website</button>}
           <button className={btnPrimary} onClick={printPdf}><Download size={15} /> Download PDF</button>
         </span>
       </div>

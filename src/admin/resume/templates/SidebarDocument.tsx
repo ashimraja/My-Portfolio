@@ -17,6 +17,7 @@ export function SidebarDocument({ data: d }: { data: ResumeData }) {
   const included = d.projects.filter((p) => p.include)
   const featured = included.slice(0, Math.max(0, d.featuredCount))
   const others = included.slice(Math.max(0, d.featuredCount))
+  const text = d.otherProjectsText?.trim() // a paragraph about the other projects replaces their separate entries
   const skillBars = d.skillBars.filter((s) => s.name)
   const fallbackSkills = d.skills.filter((s) => s.include && s.label)
 
@@ -63,9 +64,9 @@ export function SidebarDocument({ data: d }: { data: ResumeData }) {
           </Block>
         )}
 
-        {d.show.otherProjects && others.length > 0 && (
+        {d.show.otherProjects && (text || others.length > 0) && (
           <Block title={d.otherProjectsTitle || 'Other Projects'}>
-            {others.map((p) => (
+            {text ? <p>{text}</p> : others.map((p) => (
               <div key={p.slug} className="rs-proj">
                 <div className="rs-proj-head"><b>{p.title}</b>{p.tagline && <span> — {p.tagline}</span>}</div>
                 <Bullets items={p.bullets.slice(0, Math.max(0, d.otherBullets))} />

@@ -2,13 +2,20 @@ import { CountUp } from '@/components/animations/CountUp'
 import { Parallax } from '@/components/animations/Parallax'
 import { Reveal, Stagger, StaggerItem } from '@/components/animations/Reveal'
 import { RevealText } from '@/components/animations/RevealText'
-import { usePortfolio } from '@/content/ContentProvider'
+import { useContent, usePortfolio } from '@/content/ContentProvider'
 import { ScrollWords } from '@/components/animations/ScrollWords'
 import { AboutPhoto } from './AboutPhoto'
 import { CubeGame } from './CubeGame'
 
 export function About() {
-  const { about, stats } = usePortfolio()
+  const { about, stats: saved } = usePortfolio()
+  const { projects, research } = useContent().content
+  // Automatic numbers follow the site. A saved “Case Studies” row (it only ever repeated the project count) becomes the research-paper count.
+  const counts = { projects: projects.items.length, research: research.items.filter((p) => p.status === 'published').length }
+  const stats = saved
+    .map((s) => (!s.source && /case stud/i.test(s.label) ? { ...s, label: 'Research Papers', source: 'research' as const } : s))
+    .map((s) => (s.source ? { ...s, value: counts[s.source] } : s))
+    .filter((s) => !s.source || s.value > 0) // an automatic number that is still zero stays hidden
   return (
     <section id="about" className="section" aria-labelledby="about-title">
       <div className="container-x">
@@ -42,9 +49,10 @@ export function About() {
           </div>
         </div>
 
-        <Stagger className="mt-20 grid grid-cols-2 gap-px border border-border bg-border md:mt-28 md:grid-cols-4" gap={0.1}>
-          {stats.map((s) => (
-            <StaggerItem key={s.label} className="bg-background p-5 sm:p-8">
+        {/* The grid follows the number of stats, so a hidden one never leaves an empty grey cell; on a two-column phone grid an odd last stat spans the row. */}
+        <Stagger className={`mt-20 grid grid-cols-2 gap-px border border-border bg-border md:mt-28 ${({ 1: 'md:grid-cols-1', 2: 'md:grid-cols-2', 3: 'md:grid-cols-3' } as Record<number, string>)[stats.length] ?? 'md:grid-cols-4'}`} gap={0.1}>
+          {stats.map((s, i) => (
+            <StaggerItem key={s.label} className={`bg-background p-5 sm:p-8 ${i === stats.length - 1 && stats.length % 2 === 1 ? 'col-span-2 md:col-span-1' : ''}`}>
               <p className="t-stat"><CountUp value={s.value} suffix={s.suffix} /></p>
               <p className="t-label mt-3">{s.label}</p>
             </StaggerItem>

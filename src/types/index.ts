@@ -1,6 +1,8 @@
+import type { ResumeData } from '@/admin/resume/model'
 export interface SocialLink { label: string; href: string }
 
-export interface Stat { value: number; suffix: string; label: string }
+/** `source` makes the number follow the site (published research papers, or projects) instead of the typed value. */
+export interface Stat { value: number; suffix: string; label: string; source?: 'projects' | 'research' }
 
 export interface SeoConfig {
   siteUrl: string
@@ -145,6 +147,9 @@ export interface ResearchPaper {
 }
 export interface ResearchContent { intro: SectionIntro; items: ResearchPaper[] }
 
+/** The resume shown on the home page: a copy of one built in the dashboard's resume builder, or null to build it from the site content. */
+export interface ResumeContent { id: string; data: ResumeData | null }
+
 export interface SideProject { kind?: ProjectKind; title: string; blurb: string; year: string; status: string; tech: string[]; href: string }
 
 export interface AfterHoursContent {
@@ -168,6 +173,7 @@ export interface SiteContent {
   afterHours: AfterHoursContent
   blog: BlogContent
   research: ResearchContent
+  resume: ResumeContent
   navigation: { items: NavItem[]; cta: NavItem }
 }
 export type ContentKey = keyof SiteContent

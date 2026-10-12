@@ -24,6 +24,7 @@ export const defaultContent: SiteContent = {
   afterHours,
   blog,
   research,
+  resume: { id: '', data: null },
   navigation: { items: navigation, cta: navCta },
 }
 

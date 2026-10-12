@@ -2,9 +2,9 @@ import { cleanHref } from '@/lib/links'
 import type { SiteContent } from '@/types'
 
 export interface ResumeLink { label: string; href: string }
-export interface ResumeExperience { company: string; role: string; location: string; period: string; bullets: string[] }
+export interface ResumeExperience { hidden?: boolean; company: string; role: string; location: string; period: string; bullets: string[] }
 export interface ResumeProject { include: boolean; slug: string; title: string; tagline: string; bullets: string[] }
-export interface ResumeEducation { school: string; degree: string; location: string; period: string }
+export interface ResumeEducation { hidden?: boolean; school: string; degree: string; location: string; period: string }
 export interface ResumeSkill { include: boolean; label: string; items: string }
 export interface ResumeBar { name: string; level: number }
 export type TemplateId = 'classic' | 'sidebar' | 'latex' | 'harvard' | 'twocol'
@@ -30,6 +30,8 @@ export interface ResumeData {
   /** How many bullets each project shows in the “other projects” section. */
   otherBullets: number
   otherProjectsTitle: string
+  /** A short paragraph on the main things done across the other projects. When filled, the other-projects section prints just this, not one entry per project. */
+  otherProjectsText?: string
   projects: ResumeProject[]
   education: ResumeEducation[]
   skills: ResumeSkill[]

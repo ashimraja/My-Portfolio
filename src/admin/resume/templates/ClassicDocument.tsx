@@ -14,6 +14,7 @@ export function ClassicDocument({ data: d }: { data: ResumeData }) {
   const included = d.projects.filter((p) => p.include)
   const featured = included.slice(0, Math.max(0, d.featuredCount))
   const others = included.slice(Math.max(0, d.featuredCount))
+  const text = d.otherProjectsText?.trim() // a paragraph about the other projects replaces their separate entries
   const contact: ReactNode[] = [d.phone, d.email, d.location].filter(Boolean)
   const parts = [...contact, ...d.links.filter((l) => l.label).map((l) => <a key={l.label} href={l.href}>{l.label}</a>)]
   const edu = d.education // every school is printed; remove one from the list (or switch the section off) to leave it out
@@ -44,9 +45,9 @@ export function ClassicDocument({ data: d }: { data: ResumeData }) {
         </Section>
       )}
 
-      {d.show.otherProjects && others.length > 0 && (
+      {d.show.otherProjects && (text || others.length > 0) && (
         <Section title={d.otherProjectsTitle || 'Other Projects'}>
-          {others.map((p) => (
+          {text ? <p>{text}</p> : others.map((p) => (
             <div key={p.slug} className="r-proj">
               <p className="r-proj-head"><b>{p.title}</b>{p.tagline && <span> — {p.tagline}</span>}</p>
               <Bullets items={p.bullets.slice(0, Math.max(0, d.otherBullets))} />

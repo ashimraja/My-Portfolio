@@ -154,6 +154,8 @@ function Dashboard({ email }: { email: string }) {
     setInCloud((c) => new Set([...c, ...keys]))
     say(keys.length > 1 ? 'Everything published to the cloud.' : 'Saved. Your site shows it on the next page load.')
   }
+  // The website resume is set from the Resume builder, so “publish all” leaves it out rather than overwrite it with a stale copy.
+  const publishable = contentKeys.filter((k) => k !== 'resume')
   const discard = (k: ContentKey) => setKey(k, JSON.parse(saved[k]))
   const resetDefault = (k: ContentKey) => { if (confirm('Replace this section with the built-in default content?')) setKey(k, defaultContent[k]) }
 
@@ -197,7 +199,7 @@ function Dashboard({ email }: { email: string }) {
               <button onClick={() => pick('messages')} className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${active === 'messages' ? 'bg-accent text-accent-foreground' : 'hover:bg-surface'}`}>
                 Messages{unread > 0 && <span className="rounded-full bg-accent px-2 text-xs font-semibold text-accent-foreground">{unread}</span>}
               </button></div>
-            <button className={`${btnCls} w-full`} disabled={busy || state !== 'ready'} onClick={() => { void save(contentKeys); setMenuOpen(false) }}><UploadCloud size={14} /> Publish all content</button>
+            <button className={`${btnCls} w-full`} disabled={busy || state !== 'ready'} onClick={() => { void save(publishable); setMenuOpen(false) }}><UploadCloud size={14} /> Publish all content</button>
           </div>
         </nav>
 

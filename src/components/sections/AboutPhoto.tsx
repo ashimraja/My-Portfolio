@@ -1,33 +1,8 @@
-import { animate, motion, useAnimationControls, useInView, useMotionValue, useSpring, useTransform } from 'framer-motion'
-import { useEffect, useRef, useState } from 'react'
+import { motion, useAnimationControls, useMotionValue, useSpring, useTransform } from 'framer-motion'
+import { useRef, useState } from 'react'
 import { Reveal } from '@/components/animations/Reveal'
 import { usePortfolio } from '@/content/ContentProvider'
 import { usePrefersReducedMotion } from '@/hooks/useMediaQuery'
-
-/** Small cards tucked behind the portrait that slide out around it as it scrolls into view. x/y are fractions of the portrait's size. */
-const CARDS = [{ x: 0.62, y: -0.06, r: 7 }, { x: -0.06, y: 0.78, r: -6 }, { x: 0.6, y: 1.0, r: 3 }]
-
-function FloatCard({ show, i, label, value }: { show: boolean; i: number; label: string; value: string }) {
-  const c = CARDS[i]
-  // Time-based, not scroll-linked: tying the slide to scroll position stutters on a phone, where scroll events lag behind the finger. Once the portrait is in view the cards ease out on their own clock.
-  const k = useMotionValue(0)
-  useEffect(() => {
-    if (!show) return
-    const a = animate(k, 1, { duration: 0.9, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] })
-    return () => a.stop()
-  }, [show, i, k])
-  const left = `${c.x * 100}%`, top = `${c.y * 100}%`
-  const x = useTransform(k, (v) => (1 - v) * (0.2 - c.x) * 260)
-  const y = useTransform(k, (v) => (1 - v) * (0.4 - c.y) * 300)
-  const rotate = useTransform(k, (v) => c.r * v)
-  const opacity = useTransform(k, (v) => Math.min(1, v * 3))
-  return (
-    <motion.div aria-hidden style={{ left, top, x, y, rotate, opacity }} className="pointer-events-none absolute z-20 w-[9.5rem] rounded-lg border border-border bg-surface px-4 py-3 shadow-[0_10px_24px_-14px_rgba(0,0,0,0.6)] will-change-transform [backface-visibility:hidden] md:w-40">
-      <p className="t-label">{label}</p>
-      <p className="mt-1 text-sm font-medium leading-snug">{value}</p>
-    </motion.div>
-  )
-}
 
 interface Spark { id: number; x: number; y: number; dx: number; dy: number; size: number }
 let sparkId = 0
@@ -38,15 +13,13 @@ let sparkId = 0
  * a click or tap makes it bounce and throw a few accent sparks. Reduced-motion visitors get the plain picture.
  */
 export function AboutPhoto() {
-  const { about, name, initials, title, location, stats } = usePortfolio()
+  const { about, name, initials } = usePortfolio()
   const reduce = usePrefersReducedMotion()
   const box = useRef<HTMLDivElement>(null)
   const bounce = useAnimationControls()
   const [lit, setLit] = useState(false)
   const [sparks, setSparks] = useState<Spark[]>([])
   const litTimer = useRef(0)
-  const shown = useInView(box, { once: true, amount: 0.35 })
-  const facts = [['Based in', location], ['Role', title], [stats[0]?.label ?? 'Shipped', stats[0] ? `${stats[0].value}${stats[0].suffix}` : '']].filter(([, v]) => v)
 
   // pointer position inside the portrait, -0.5 … 0.5
   const px = useMotionValue(0), py = useMotionValue(0)
@@ -83,7 +56,6 @@ export function AboutPhoto() {
         <motion.div animate={bounce} style={{ rotateX: reduce ? 0 : rotateX, rotateY: reduce ? 0 : rotateY, }} className="relative z-10 overflow-hidden rounded-xl will-change-transform [backface-visibility:hidden]">
           {picture}
         </motion.div>
-        {facts.map(([label, value], i) => <FloatCard key={label} show={shown} i={i} label={label} value={value} />)}
         {sparks.map((k) => (
           <motion.span key={k.id} aria-hidden className="pointer-events-none absolute left-0 top-0 rounded-full bg-accent"
             style={{ width: k.size, height: k.size, x: k.x - k.size / 2, y: k.y - k.size / 2 }}

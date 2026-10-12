@@ -19,7 +19,9 @@ export const templateOptions = Object.keys(templates) as TemplateId[]
  * One A4-wide page frame, used for the on-screen preview AND for printing.
  * The empty <thead>/<tfoot> rows give every printed page its top/bottom margin (page margin itself is 0).
  */
-export function ResumePage({ data }: { data: ResumeData }) {
+export function ResumePage({ data: full }: { data: ResumeData }) {
+  // Jobs and schools hidden in the builder are kept in the data but never printed (projects and skills use their `include` flag).
+  const data = { ...full, experience: full.experience.filter((e) => !e.hidden), education: full.education.filter((e) => !e.hidden) }
   const t = templates[data.template] ?? templates.classic
   const Doc = t.Document
   return (

@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { buildFromSite } from '@/admin/resume/model'
+import { buildFromSite, normalizeResume } from '@/admin/resume/model'
 import { ResumePage } from '@/admin/resume/ResumePage'
 import { Reveal } from '@/components/animations/Reveal'
 import { ScrollWords } from '@/components/animations/ScrollWords'
@@ -11,28 +11,32 @@ import { useContent } from '@/content/ContentProvider'
 
 const MM = 96 / 25.4
 
-/** First A4 page, scaled to fit its column and faded out at the bottom. */
+/** The whole resume (every page), scaled to fit its column. */
 function PaperPreview({ data }: { data: ReturnType<typeof buildFromSite> }) {
   const box = useRef<HTMLDivElement>(null)
-  const [scale, setScale] = useState(0.5)
+  const sheet = useRef<HTMLDivElement>(null)
+  const [fit, setFit] = useState({ scale: 0.5, height: 0 })
   useLayoutEffect(() => {
-    const measure = () => box.current && setScale(Math.min(1, box.current.clientWidth / (210 * MM)))
+    const measure = () => {
+      if (!box.current || !sheet.current) return
+      const scale = Math.min(1, box.current.clientWidth / (210 * MM))
+      setFit({ scale, height: sheet.current.offsetHeight * scale })
+    }
     measure()
     const ro = new ResizeObserver(measure)
-    ro.observe(box.current!)
+    ro.observe(box.current!); ro.observe(sheet.current!)
     return () => ro.disconnect()
-  }, [])
+  }, [data])
   return (
-    <div ref={box} aria-hidden className="relative w-full select-none overflow-hidden rounded-md shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)] ring-1 ring-white/10" style={{ height: 297 * MM * scale * 0.82 }}>
-      <div className="origin-top-left bg-white" style={{ width: '210mm', transform: `scale(${scale})` }}><ResumePage data={data} /></div>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-background/90 to-transparent" />
+    <div ref={box} aria-hidden className="relative w-full select-none overflow-hidden rounded-md shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)] ring-1 ring-white/10" style={{ height: fit.height || undefined }}>
+      <div ref={sheet} className="origin-top-left bg-white" style={{ width: '210mm', transform: `scale(${fit.scale})` }}><ResumePage data={data} /></div>
     </div>
   )
 }
 
 export default function ResumeSection() {
   const { content } = useContent()
-  const data = useMemo(() => buildFromSite(content), [content])
+  const data = useMemo(() => (content.resume.data ? normalizeResume(content.resume.data, content) : buildFromSite(content)), [content]) // the resume picked in the dashboard, else one built from the site
   const { portfolio } = content
 
   const download = () => {
@@ -56,8 +60,8 @@ export default function ResumeSection() {
       <div className="container-x">
         <SectionHeading index="06" kicker="Resume" title="The short version." />
         <span id="resume-h" className="sr-only">Resume</span>
-        <div className="mt-14 grid grid-cols-1 items-center gap-12 md:mt-20 lg:grid-cols-12 lg:gap-16">
-          <Reveal className="min-w-0 lg:col-span-5">
+        <div className="mt-14 grid grid-cols-1 items-start gap-12 md:mt-20 lg:grid-cols-12 lg:gap-16">
+          <Reveal className="min-w-0 lg:sticky lg:top-28 lg:col-span-5 lg:self-start">
             <ScrollWords className="t-lead" text={data.summary} />
             <dl className="mt-10 divide-y divide-border border-y border-border">
               {facts.map(([k, v]) => (

@@ -1,6 +1,6 @@
 import { AnimatePresence, motion, useMotionValue, useScroll, useSpring } from 'framer-motion'
 import { ArrowUpRight, Lightbulb, Menu, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { homeSections, withDefaultLinks } from '@/data/navigation'
 import { useContent } from '@/content/ContentProvider'
@@ -11,7 +11,7 @@ import { ease } from '@/lib/animations'
 import { hrefFor, useNavTarget } from './useNavTarget'
 import type { NavItem } from '@/types'
 
-/** Floating capsule, inset from the edges from the first frame. Gets a stronger glass fill once you scroll, tucks away while you scroll down and returns on the way up, and leans toward the pointer. */
+/** Floating capsule, inset from the edges from the first frame. Gets a stronger glass fill once you scroll, tucks away while you scroll down and returns on the way up or when the pointer reaches the top edge, and leans toward the pointer. */
 export function Navbar() {
   const { portfolio, navigation: nav, blog, research } = useContent().content
   const navigation = withDefaultLinks(nav.items, blog.items.length > 0, research.items.some((p) => p.status === 'published')), navCta = nav.cta
@@ -26,17 +26,26 @@ export function Navbar() {
   const my = useSpring(useMotionValue(0), { stiffness: 90, damping: 16, mass: 0.6 })
 
   const { scrollYProgress } = useScroll()
+  const atEdge = useRef(false) // pointer parked at the top edge: keep the bar out while it is there
 
   useEffect(() => {
     let last = window.scrollY
     const on = () => {
       const y = window.scrollY
       setScrolled(y > 40)
-      if (Math.abs(y - last) > 6) { setHidden(y > 320 && y > last); last = y } // tuck away on a clear downward scroll, come back on any upward one
+      if (Math.abs(y - last) > 6) { setHidden(y > 320 && y > last && !atEdge.current); last = y } // tuck away on a clear downward scroll, come back on any upward one
     }
     on()
     window.addEventListener('scroll', on, { passive: true })
     return () => window.removeEventListener('scroll', on)
+  }, [])
+
+  // Moving the pointer to the top edge (or tapping it) brings a tucked-away bar back without having to scroll up.
+  useEffect(() => {
+    const edge = (e: PointerEvent) => { atEdge.current = e.clientY <= 72; if (atEdge.current) setHidden(false) }
+    window.addEventListener('pointermove', edge, { passive: true })
+    window.addEventListener('pointerdown', edge, { passive: true })
+    return () => { window.removeEventListener('pointermove', edge); window.removeEventListener('pointerdown', edge) }
   }, [])
 
   useEffect(() => {

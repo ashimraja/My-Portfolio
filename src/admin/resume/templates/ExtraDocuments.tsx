@@ -8,6 +8,7 @@ function parts(d: ResumeData) {
   return {
     featured: included.slice(0, n),
     others: included.slice(n),
+    text: d.otherProjectsText?.trim() ?? '', // a paragraph about the other projects replaces their separate entries
     skills: d.skills.filter((s) => s.include && s.label),
     extra: d.extra.filter((x) => x.title),
   }
@@ -26,7 +27,7 @@ const ProjHead = ({ title, tagline, sep }: { title: string; tagline: string; sep
 
 /** LaTeX-style (the popular “Jake’s resume” look): serif, small-caps headings, compact. */
 export function LatexDocument({ data: d }: { data: ResumeData }) {
-  const { featured, others, skills, extra } = parts(d)
+  const { featured, others, text, skills, extra } = parts(d)
   return (
     <div className="rt rt-latex">
       <h1>{d.name}</h1>
@@ -57,9 +58,9 @@ export function LatexDocument({ data: d }: { data: ResumeData }) {
         </Sec>
       )}
 
-      {(featured.length > 0 || (d.show.otherProjects && others.length > 0)) && (
+      {(featured.length > 0 || (d.show.otherProjects && !text && others.length > 0)) && (
         <Sec title="Projects">
-          {[...featured, ...(d.show.otherProjects ? others : [])].map((p, i) => (
+          {[...featured, ...(d.show.otherProjects && !text ? others : [])].map((p, i) => (
             <div key={p.slug} className="rt-entry rt-proj">
               <ProjHead title={p.title} tagline={p.tagline} sep=" | " />
               <Bullets items={i < featured.length ? p.bullets : p.bullets.slice(0, Math.max(0, d.otherBullets))} />
@@ -67,6 +68,7 @@ export function LatexDocument({ data: d }: { data: ResumeData }) {
           ))}
         </Sec>
       )}
+      {d.show.otherProjects && text && <Sec title={d.otherProjectsTitle || 'Other Projects'}><p>{text}</p></Sec>}
 
       {d.show.skills && skills.length > 0 && <Sec title="Technical Skills"><div className="rt-skills">{skills.map((s, i) => <p key={i}><b>{s.label}:</b> {s.items}</p>)}</div></Sec>}
       {extra.map((x, i) => <Sec key={i} title={x.title}><Bullets items={x.lines} /></Sec>)}
@@ -76,7 +78,7 @@ export function LatexDocument({ data: d }: { data: ResumeData }) {
 
 /** Harvard-style: Times, centred header, bold uppercase headings with a rule. */
 export function HarvardDocument({ data: d }: { data: ResumeData }) {
-  const { featured, others, skills, extra } = parts(d)
+  const { featured, others, text, skills, extra } = parts(d)
   return (
     <div className="rt rt-harvard">
       <h1>{d.name}</h1>
@@ -99,9 +101,9 @@ export function HarvardDocument({ data: d }: { data: ResumeData }) {
         </Sec>
       )}
 
-      {d.show.otherProjects && others.length > 0 && (
+      {d.show.otherProjects && (text || others.length > 0) && (
         <Sec title={d.otherProjectsTitle || 'Other Projects'}>
-          {others.map((p) => <div key={p.slug} className="rt-proj"><ProjHead title={p.title} tagline={p.tagline} sep=" — " /><Bullets items={p.bullets.slice(0, Math.max(0, d.otherBullets))} /></div>)}
+          {text ? <p>{text}</p> : others.map((p) => <div key={p.slug} className="rt-proj"><ProjHead title={p.title} tagline={p.tagline} sep=" — " /><Bullets items={p.bullets.slice(0, Math.max(0, d.otherBullets))} /></div>)}
         </Sec>
       )}
 
@@ -124,7 +126,7 @@ export function HarvardDocument({ data: d }: { data: ResumeData }) {
 
 /** Two-column engineer CV (Deedy-style): accent-coloured name, narrow left column for education/skills. */
 export function TwoColumnDocument({ data: d }: { data: ResumeData }) {
-  const { featured, others, skills, extra } = parts(d)
+  const { featured, others, text, skills, extra } = parts(d)
   return (
     <div className="rt rt-twocol">
       <header>
@@ -158,9 +160,9 @@ export function TwoColumnDocument({ data: d }: { data: ResumeData }) {
               ))}
             </Sec>
           )}
-          {d.show.otherProjects && others.length > 0 && (
+          {d.show.otherProjects && (text || others.length > 0) && (
             <Sec title={d.otherProjectsTitle || 'Other Projects'}>
-              {others.map((p) => <div key={p.slug} className="rt-proj"><ProjHead title={p.title} tagline={p.tagline} sep=" — " /><Bullets items={p.bullets.slice(0, Math.max(0, d.otherBullets))} /></div>)}
+              {text ? <p>{text}</p> : others.map((p) => <div key={p.slug} className="rt-proj"><ProjHead title={p.title} tagline={p.tagline} sep=" — " /><Bullets items={p.bullets.slice(0, Math.max(0, d.otherBullets))} /></div>)}
             </Sec>
           )}
         </div>

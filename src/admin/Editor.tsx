@@ -85,10 +85,13 @@ function ImageList({ value, onChange }: { value: Screenshot[]; onChange: (v: Scr
 
 function ObjectList({ f, value, onChange }: { f: Extract<Field, { kind: 'list' }>; value: Obj[]; onChange: (v: Obj[]) => void }) {
   const [open, setOpen] = useState<number | null>(value.length === 1 ? 0 : null)
+  // Most lists keep a `hidden` flag; the resume's projects and skills already had an `include` tick, which the eye now drives (hidden = not included).
+  const isHidden = (item: Obj) => (f.hideKey === 'include' ? item.include === false : Boolean(item.hidden))
+  const toggle = (item: Obj): Obj => (f.hideKey === 'include' ? { ...item, include: item.include === false } : { ...item, hidden: !item.hidden })
   const titleOf = (item: Obj, i: number) => (f.titleFrom?.(item).trim()) || (f.titleKey && String(item[f.titleKey] ?? '').trim()) || `${f.label} ${i + 1}`
   // Hidden items live in their own group below, so it is always clear what visitors can see. Indexes stay those of the saved array.
-  const shown = value.map((_, i) => i).filter((i) => !value[i].hidden)
-  const hid = value.map((_, i) => i).filter((i) => value[i].hidden)
+  const shown = value.map((_, i) => i).filter((i) => !isHidden(value[i]))
+  const hid = value.map((_, i) => i).filter((i) => isHidden(value[i]))
   const swap = (i: number, group: number[], d: number) => { // move within the item's own group: swap with its neighbour there
     const at = group.indexOf(i), j = group[at + d]
     if (j === undefined) return
@@ -103,9 +106,9 @@ function ObjectList({ f, value, onChange }: { f: Extract<Field, { kind: 'list' }
         <div className="flex items-center gap-1 pr-2">
           <button type="button" onClick={() => setOpen(isOpen ? null : i)} aria-expanded={isOpen} className="flex min-w-0 flex-1 items-center gap-2 px-3 py-3 text-left">
             <ChevronDown size={16} className={`shrink-0 text-muted-foreground transition-transform ${isOpen ? '' : '-rotate-90'}`} />
-            <span className={`truncate text-sm font-medium ${item.hidden ? 'text-muted-foreground' : ''}`}>{title}</span>
+            <span className={`truncate text-sm font-medium ${isHidden(item) ? 'text-muted-foreground' : ''}`}>{title}</span>
           </button>
-          <RowTools i={at} n={group.length} hidden={Boolean(item.hidden)} onToggleHide={f.hideable ? () => onChange(value.map((x, k) => (k === i ? { ...x, hidden: !x.hidden } : x))) : undefined}
+          <RowTools i={at} n={group.length} hidden={isHidden(item)} onToggleHide={f.hideable ? () => onChange(value.map((x, k) => (k === i ? toggle(x) : x))) : undefined}
             onMove={(d) => swap(i, group, d)}
             onCopy={() => { onChange([...value.slice(0, i + 1), structuredClone(item), ...value.slice(i + 1)]); setOpen(null) }}
             onRemove={() => { if (confirm(`Remove “${title}” for good? To keep it but not show it, use the eye button instead.`)) { onChange(value.filter((_, k) => k !== i)); setOpen(null) } }} />
