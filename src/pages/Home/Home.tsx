@@ -9,7 +9,7 @@ import { About } from '@/components/sections/About'
 import { StackExplorer } from '@/components/stack/StackExplorer'
 import { Testimonials } from '@/components/testimonials/Testimonials'
 import { useSeo } from '@/hooks/useSeo'
-import { scrollToTarget } from '@/lib/scroll'
+import { landOnSection } from '@/lib/scroll'
 
 // The resume pulls in the print templates, so it is split out of the entry chunk.
 const ResumeSection = lazy(() => import('@/components/resume/ResumeSection'))
@@ -19,9 +19,9 @@ export default function Home() {
   const { hash } = useLocation()
   useEffect(() => {
     if (!hash) return
+    if (document.querySelector(`[data-sheet] ${hash}`)) return // still riding in on the page-transition sheet; PageTransition scrolls once it has landed
     const t = setTimeout(() => {
-      scrollToTarget(hash, { immediate: true })
-      history.replaceState(history.state, '', window.location.pathname + window.location.search) // the hash only carried us here; keep the URL clean
+      landOnSection(hash)
     }, 600) // after curtain lifts
     return () => clearTimeout(t)
   }, [hash])

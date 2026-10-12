@@ -20,7 +20,14 @@ const HALF = 34
 const HA = `${HALF}deg`
 const start = `calc(var(--la) - ${c0}deg)`
 const darkMask = `conic-gradient(from ${start} at var(--lx) var(--ly), #000 0deg, #000 calc(${c0}deg - ${HA} - ${FEATHER}deg), transparent calc(${c0}deg - ${HA}), transparent calc(${c0}deg + ${HA}), #000 calc(${c0}deg + ${HA} + ${FEATHER}deg), #000 360deg)`
-const glowCone = `conic-gradient(from ${start} at var(--lx) var(--ly), transparent 0deg, transparent calc(${c0}deg - ${HA} - 14deg), rgba(255,176,96,.05) calc(${c0}deg - ${HA} + 4deg), rgba(255,196,124,.15) calc(${c0}deg - 14deg), rgba(255,210,140,.2) ${c0}deg, rgba(255,196,124,.15) calc(${c0}deg + 14deg), rgba(255,176,96,.05) calc(${c0}deg + ${HA} - 4deg), transparent calc(${c0}deg + ${HA} + 14deg), transparent 360deg)`
+// A smooth bell-shaped profile across the cone (no stripes, no visible edge): brightest on the axis, easing to nothing well inside the dark mask's opening.
+const glowStops = Array.from({ length: 21 }, (_, i) => {
+  const u = (i / 20) * 2 - 1 // -1..1 across the cone, slightly wider than the opening
+  const o = u * (HALF + 8)
+  const a = 0.32 * Math.exp(-3.2 * u * u)
+  return `rgba(255,${196 + Math.round(14 * Math.exp(-3 * u * u))},${124 + Math.round(16 * Math.exp(-3 * u * u))},${a.toFixed(3)}) calc(${c0}deg + ${o.toFixed(2)}deg)`
+})
+const glowCone = `conic-gradient(from ${start} at var(--lx) var(--ly), transparent 0deg, transparent calc(${c0}deg - ${HALF + 9}deg), ${glowStops.join(', ')}, transparent calc(${c0}deg + ${HALF + 9}deg), transparent 360deg)`
 // Half-planes split along the rim line (through --rx/--ry, perpendicular to the lamp axis): light exists only below it,
 // so no glow spills above or beside the neck. The narrow angular feather keeps the edge soft.
 const below = `conic-gradient(from calc(var(--la) - 90deg) at var(--rx) var(--ry), transparent 0deg, #000 9deg, #000 171deg, transparent 180deg, transparent 360deg)`

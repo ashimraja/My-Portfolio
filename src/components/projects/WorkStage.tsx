@@ -31,7 +31,7 @@ const NO_POSE: Pose = { dx: 0, dy: 0, r: 0, oy: 0, s: 1 }
 /**
  * Home: the hero and the work section are one pinned stage.
  * Phase 1 — the project covers fan out on the right of the hero; scrolling flies them into a horizontal row while the hero copy fades.
- * Phase 2 — the row scrolls sideways. On touch screens a sideways swipe drives the same scroll.
+ * Phase 2 — the row scrolls sideways. A sideways swipe, mouse drag or trackpad gesture drives the same scroll.
  */
 export function WorkStage() {
   const { items, intro } = useContent().content.projects
@@ -133,7 +133,7 @@ function WorkStageInner({ all, intro }: { all: Project[]; intro: { kicker: strin
     return () => { ro.disconnect(); window.removeEventListener('resize', measure) }
   }, [measure])
 
-  // Touch: a sideways swipe scrolls the page by the same amount (with momentum), so it drives the flight and the row. Vertical swipes are left to the browser.
+  // Touch / mouse: a sideways swipe or drag scrolls the page by the same amount (with momentum), so it drives the flight and the row. Vertical swipes are left to the browser.
   useEffect(() => {
     const el = pin.current!
     let id = -1, sx = 0, sy = 0, lx = 0, lt = 0, vel = 0, raf = 0, moved = false, mode: 'idle' | 'h' | 'v' = 'idle'
@@ -143,7 +143,7 @@ function WorkStageInner({ all, intro }: { all: Project[]; intro: { kicker: strin
       const top = w.getBoundingClientRect().top + window.scrollY, max = w.offsetHeight - (pin.current?.offsetHeight ?? window.innerHeight) // the pinned box is 100svh; innerHeight is taller once a phone's address bar hides, which stopped the swipe short of the last card
       window.scrollTo(0, Math.min(top + max, Math.max(top, window.scrollY + dy)))
     }
-    const down = (e: PointerEvent) => { if (e.pointerType === 'mouse') return; cancelAnimationFrame(raf); id = e.pointerId; sx = lx = e.clientX; sy = e.clientY; lt = e.timeStamp; vel = 0; moved = false; mode = 'idle' }
+    const down = (e: PointerEvent) => { if (e.pointerType === 'mouse' && e.button !== 0) return; cancelAnimationFrame(raf); id = e.pointerId; sx = lx = e.clientX; sy = e.clientY; lt = e.timeStamp; vel = 0; moved = false; mode = 'idle' }
     const move = (e: PointerEvent) => {
       if (e.pointerId !== id) return
       if (mode === 'idle') {
@@ -167,13 +167,17 @@ function WorkStageInner({ all, intro }: { all: Project[]; intro: { kicker: strin
       }
       mode = 'idle'
     }
+    const wheel = (e: WheelEvent) => { if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) { e.preventDefault(); scrollBy(e.deltaX) } } // a sideways trackpad / shift-wheel gesture drives the row too
+    const dragstart = (e: Event) => e.preventDefault() // a mouse drag moves the row, not the cover image or link
     const click = (e: Event) => { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false } } // a swipe is not a tap on the card under the finger
     el.addEventListener('pointerdown', down)
     el.addEventListener('pointermove', move)
     el.addEventListener('pointerup', up)
     el.addEventListener('pointercancel', up)
     el.addEventListener('click', click, true)
-    return () => { cancelAnimationFrame(raf); el.removeEventListener('pointerdown', down); el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up); el.removeEventListener('click', click, true) }
+    el.addEventListener('wheel', wheel, { passive: false })
+    el.addEventListener('dragstart', dragstart)
+    return () => { el.removeEventListener('wheel', wheel); el.removeEventListener('dragstart', dragstart); cancelAnimationFrame(raf); el.removeEventListener('pointerdown', down); el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up); el.removeEventListener('click', click, true) }
   }, [])
 
   return (

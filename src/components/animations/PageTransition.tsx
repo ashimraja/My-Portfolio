@@ -1,9 +1,10 @@
 import { animate, motion, useMotionValue, useTransform } from 'framer-motion'
 import { useLocation, type Location } from 'react-router-dom'
+import { flushSync } from 'react-dom'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { usePrefersReducedMotion } from '@/hooks/useMediaQuery'
 import { easeInOut } from '@/lib/animations'
-import { scrollToTarget } from '@/lib/scroll'
+import { landOnSection, scrollToTarget } from '@/lib/scroll'
 
 const DURATION = 0.8 // the sheet's single sweep up
 
@@ -31,14 +32,24 @@ export function PageTransition({ children }: { children: (location: Location) =>
     busy.current = true
     sheetY.set(100); dim.set(0)
     setPages((p) => [p[p.length - 1], location])
+    const showTarget = () => { // while it rises, the sheet already shows the section being travelled to rather than the top of the page
+      const hash = latest.current.hash, sheet = document.querySelector<HTMLElement>('[data-sheet]'), el = hash && sheet?.querySelector(hash)
+      if (sheet && el) sheet.scrollTop += el.getBoundingClientRect().top - sheet.getBoundingClientRect().top
+    }
+    const stopShow = sheetY.on('change', showTarget)
+    requestAnimationFrame(showTarget)
     void Promise.all([
       animate(sheetY, 0, { duration: DURATION, ease: easeInOut }),
       animate(dim, 0.5, { duration: DURATION, ease: easeInOut }),
     ]).then(() => {
+      stopShow()
       const to = latest.current
       if (!to.hash) scrollToTarget(0, { immediate: true }) // the sheet fully covers the screen, so the old page jumping to the top is not seen
-      setPages([to])
+      flushSync(() => setPages([to]))
       dim.set(0); busy.current = false
+      if (to.hash) { // land on the section in the same frame the sheet stops being a sheet, so there is no visible hop from the top
+        landOnSection(to.hash)
+      }
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `pages` is read for the current page only; a new location is what starts a sweep
   }, [location, reduce, sheetY, dim])
@@ -50,7 +61,7 @@ export function PageTransition({ children }: { children: (location: Location) =>
       {pages.map((loc, i) => {
         const sheet = sweeping && i === pages.length - 1
         return (
-          <motion.div key={loc.pathname} style={{ y: sheet ? sheetTransform : 0 }} aria-hidden={sheet || undefined}
+          <motion.div key={loc.pathname} data-sheet={sheet || undefined} style={{ y: sheet ? sheetTransform : 0 }} aria-hidden={sheet || undefined}
             className={sheet ? 'pointer-events-none fixed inset-0 z-50 overflow-hidden border-t border-foreground/10 bg-background shadow-[0_-30px_70px_-24px_rgba(0,0,0,0.4)] will-change-transform' : undefined}>
             {children(loc)}
           </motion.div>

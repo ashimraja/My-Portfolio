@@ -192,3 +192,4 @@ html[data-mode='light']:not([data-theme='night']) .hljs-number, html[data-mode='
 html[data-mode='light']:not([data-theme='night']) .hljs-title, html[data-mode='light']:not([data-theme='night']) .hljs-section { color: #7a4b00; }
 html[data-mode='light']:not([data-theme='night']) .hljs-type, html[data-mode='light']:not([data-theme='night']) .hljs-built_in, html[data-mode='light']:not([data-theme='night']) .hljs-selector-class { color: #2f7a3a; }
 html[data-mode='light']:not([data-theme='night']) .hljs-attr, html[data-mode='light']:not([data-theme='night']) .hljs-property, html[data-mode='light']:not([data-theme='night']) .hljs-name, html[data-mode='light']:not([data-theme='night']) .hljs-tag { color: #6b46c1; }
+
